@@ -2,16 +2,16 @@
  *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
  *  Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the 
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of 
+ *  This program is free software; you can redistribute it and/or modify it under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation; either version 2 of
  *  the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *  See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program; 
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
+ *  You should have received a copy of the GNU General Public License along with this program;
+ *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307 USA
  */
 
@@ -29,7 +29,7 @@ import com.google.common.collect.BiMap;
 
 /**
  * Attempts to clone collection and array classes.
- * 
+ *
  * @author Kristian
  */
 public class CollectionCloner implements Cloner {
@@ -37,6 +37,7 @@ public class CollectionCloner implements Cloner {
 
 	/**
 	 * Constructs a new collection and array cloner with the given inner element cloner.
+	 *
 	 * @param defaultCloner - default inner element cloner.
 	 */
 	public CollectionCloner(Cloner defaultCloner) {
@@ -47,7 +48,7 @@ public class CollectionCloner implements Cloner {
 	public boolean canClone(Object source) {
 		if (source == null)
 			return false;
-		
+
 		Class<?> clazz = source.getClass();
 		return Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz) || clazz.isArray();
 	}
@@ -57,7 +58,7 @@ public class CollectionCloner implements Cloner {
 	public Object clone(Object source) {
 		if (source == null)
 			throw new IllegalArgumentException("source cannot be NULL.");
-		
+
 		Class<?> clazz = source.getClass();
 
 		try {
@@ -135,12 +136,13 @@ public class CollectionCloner implements Cloner {
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to clone " + source + " (" + source.getClass() + ")", ex);
 		}
-		
+
 		throw new IllegalArgumentException(source + " is not an array nor a Collection.");
 	}
-	
+
 	/**
 	 * Clone an element using the default cloner.
+	 *
 	 * @param element - the element to clone.
 	 * @param container - where the element is stored.
 	 * @return The cloned element.
@@ -151,9 +153,10 @@ public class CollectionCloner implements Cloner {
 		else
 			throw new IllegalArgumentException("Cannot clone " + element + " in container " + container);
 	}
-	
+
 	/**
 	 * Clone a primitive or immutable array by calling its clone method.
+	 *
 	 * @param component - the component type of the array.
 	 * @param source - the array itself.
 	 * @return The cloned array.
@@ -179,9 +182,10 @@ public class CollectionCloner implements Cloner {
 		else
 			return ((Object[]) source).clone();
 	}
-	
+
 	/**
 	 * Clone an object by calling its clone constructor, or alternatively, a "clone" method.
+	 *
 	 * @param superclass - the superclass we expect in the clone constructor.
 	 * @param clazz - the class of the object.
 	 * @param source - the object itself.
@@ -202,9 +206,10 @@ public class CollectionCloner implements Cloner {
 			throw new RuntimeException("Cannot construct collection.", e);
 		}
 	}
-	
+
 	/**
 	 * Clone an object by calling "clone" using reflection.
+	 *
 	 * @param clazz - the class type.
 	 * @param source - the object to clone.
 	 * @return The cloned object.
@@ -217,9 +222,10 @@ public class CollectionCloner implements Cloner {
 			throw new RuntimeException("Cannot copy " + source + " (" + clazz + ")", e1);
 		}
 	}
-	
+
 	/**
 	 * Retrieve the default cloner used to clone the content of each element in the collection.
+	 *
 	 * @return Cloner used to clone elements.
 	 */
 	public Cloner getDefaultCloner() {

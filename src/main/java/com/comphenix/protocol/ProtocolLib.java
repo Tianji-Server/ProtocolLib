@@ -27,7 +27,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.comphenix.protocol.async.AsyncFilterManager;
-import com.comphenix.protocol.error.*;
+import com.comphenix.protocol.error.BasicErrorReporter;
+import com.comphenix.protocol.error.DelegatedErrorReporter;
+import com.comphenix.protocol.error.DetailedErrorReporter;
+import com.comphenix.protocol.error.ErrorReporter;
+import com.comphenix.protocol.error.Report;
+import com.comphenix.protocol.error.ReportType;
 import com.comphenix.protocol.injector.DelayedSingleTask;
 import com.comphenix.protocol.injector.InternalManager;
 import com.comphenix.protocol.injector.PacketFilterManager;
@@ -200,13 +205,13 @@ public class ProtocolLib extends JavaPlugin {
 
 			unhookTask = new DelayedSingleTask(this);
 			protocolManager = PacketFilterManager.newBuilder()
-					.classLoader(getClassLoader())
-					.server(getServer())
-					.library(this)
-					.minecraftVersion(version)
-					.unhookTask(unhookTask)
-					.reporter(reporter)
-					.build();
+				.classLoader(getClassLoader())
+				.server(getServer())
+				.library(this)
+				.minecraftVersion(version)
+				.unhookTask(unhookTask)
+				.reporter(reporter)
+				.build();
 
 			// Initialize the API
 			ProtocolLibrary.init(this, config, protocolManager, reporter);
@@ -266,7 +271,7 @@ public class ProtocolLib extends JavaPlugin {
 				logger.warning("Failed to register command " + command.name() + ": " + e);
 			} catch (Throwable e) {
 				reporter.reportWarning(this, Report.newBuilder(REPORT_CANNOT_REGISTER_COMMAND)
-						.messageParam(command.name(), e.getMessage()).error(e));
+					.messageParam(command.name(), e.getMessage()).error(e));
 			}
 		}
 	}
@@ -364,7 +369,7 @@ public class ProtocolLib extends JavaPlugin {
 			if (protocolManager == null) {
 				Logger directLogging = Logger.getLogger("Minecraft");
 				String[] message = new String[] {
-						" ProtocolLib does not support plugin reloaders! ", " Please use the built-in reload command! "
+					" ProtocolLib does not support plugin reloaders! ", " Please use the built-in reload command! "
 				};
 
 				// Print as severe
@@ -509,8 +514,8 @@ public class ProtocolLib extends JavaPlugin {
 			skipDisable = true;
 
 			throw new IllegalStateException(String.format(
-					"Detected a newer version of ProtocolLib (%s) in plugin folder than the current (%s). Disabling.",
-					newestVersion.getVersion(), currentVersion.getVersion()));
+				"Detected a newer version of ProtocolLib (%s) in plugin folder than the current (%s). Disabling.",
+				newestVersion.getVersion(), currentVersion.getVersion()));
 		}
 	}
 

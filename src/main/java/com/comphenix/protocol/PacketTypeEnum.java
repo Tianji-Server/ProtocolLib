@@ -23,9 +23,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.comphenix.protocol.PacketType;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
 
 /**
@@ -33,6 +30,7 @@ import com.google.common.collect.Sets;
  * <p>
  * This is useful if you want the flexibility of a modern Java enum, but don't
  * want to prevent the creation of additional members dynamically.
+ *
  * @author Kristian
  */
 public class PacketTypeEnum implements Iterable<PacketType> {
@@ -84,9 +82,10 @@ public class PacketTypeEnum implements Iterable<PacketType> {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Registers a member if its not present.
+	 *
 	 * @param instance - member instance.
 	 * @param name - name of member.
 	 * @return TRUE if the member was registered, FALSE otherwise.
@@ -101,9 +100,10 @@ public class PacketTypeEnum implements Iterable<PacketType> {
 
 		return false;
 	}
-	
+
 	/**
 	 * Determines whether or not the given member has been registered to this enum.
+	 *
 	 * @param member - the member to check.
 	 * @return TRUE if the given member has been registered, FALSE otherwise.
 	 */
@@ -113,6 +113,7 @@ public class PacketTypeEnum implements Iterable<PacketType> {
 
 	/**
 	 * Retrieve every registered member.
+	 *
 	 * @return Enumeration of every value.
 	 */
 	public Set<PacketType> values() {

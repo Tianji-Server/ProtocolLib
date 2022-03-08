@@ -7,6 +7,7 @@ import com.google.common.base.Optional;
 
 /**
  * A cloner that can clone Guava Optional objects
+ *
  * @author dmulloy2
  */
 

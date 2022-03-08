@@ -1,23 +1,32 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2018 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2018 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.wrappers;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import com.comphenix.protocol.injector.BukkitUnwrapper;
 import com.comphenix.protocol.reflect.FieldAccessException;
@@ -31,9 +40,9 @@ import com.comphenix.protocol.reflect.fuzzy.FuzzyFieldContract;
 import com.comphenix.protocol.reflect.fuzzy.FuzzyMethodContract;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.collection.ConvertedMap;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableBiMap;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -65,7 +74,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	 * Constructs a new DataWatcher wrapper around a NMS handle. The resulting
 	 * DataWatcher will likely have existing values that can be removed with
 	 * {@link #clear()}.
-	 * 
+	 *
 	 * @param handle DataWatcher handle
 	 */
 	public WrappedDataWatcher(Object handle) {
@@ -86,7 +95,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	 * Constructs a new DataWatcher using a real entity. The resulting
 	 * DataWatcher will not have any keys or values and new ones will have to
 	 * be added using watcher objects.
-	 * 
+	 *
 	 * @param entity The entity
 	 */
 	public WrappedDataWatcher(Entity entity) {
@@ -96,7 +105,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	/**
 	 * Constructs a new DataWatcher using a fake egg entity and a given
 	 * list of watchable objects.
-	 * 
+	 *
 	 * @param objects The list of objects
 	 */
 	public WrappedDataWatcher(List<WrappedWatchableObject> objects) {
@@ -130,8 +139,8 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 		// Mojang added difficulty to lightning strikes, so this'll have to do
 		if (eggConstructor == null) {
 			eggConstructor = Accessors.getConstructorAccessor(
-					MinecraftReflection.getMinecraftClass("world.entity.projectile.EntityEgg", "EntityEgg"),
-					MinecraftReflection.getNmsWorldClass(), double.class, double.class, double.class
+				MinecraftReflection.getMinecraftClass("world.entity.projectile.EntityEgg", "EntityEgg"),
+				MinecraftReflection.getNmsWorldClass(), double.class, double.class, double.class
 			);
 		}
 
@@ -147,10 +156,10 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 			try {
 				FuzzyReflection fuzzy = FuzzyReflection.fromClass(handleType, true);
 				MAP_FIELD = Accessors.getFieldAccessor(fuzzy.getField(FuzzyFieldContract
-						.newBuilder()
-						.banModifier(Modifier.STATIC)
-						.typeDerivedOf(Map.class)
-						.build()));
+					.newBuilder()
+					.banModifier(Modifier.STATIC)
+					.typeDerivedOf(Map.class)
+					.build()));
 			} catch (IllegalArgumentException ex) {
 				throw new FieldAccessException("Failed to find watchable object map");
 			}
@@ -208,7 +217,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Gets the item at a given index.
-	 * 
+	 *
 	 * @param index Index to get
 	 * @return The watchable object, or null if none exists
 	 */
@@ -231,7 +240,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Removes the item at a given index.
-	 * 
+	 *
 	 * @param index Index to remove
 	 * @return The previous value, or null if none existed
 	 */
@@ -242,7 +251,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Whether or not this DataWatcher has an object at a given index.
-	 * 
+	 *
 	 * @param index Index to check for
 	 * @return True if it does, false if not
 	 */
@@ -270,7 +279,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched byte.
-	 * 
+	 *
 	 * @param index - index of the watched byte.
 	 * @return The watched byte, or NULL if this value doesn't exist.
 	 */
@@ -280,7 +289,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched short.
-	 * 
+	 *
 	 * @param index - index of the watched short.
 	 * @return The watched short, or NULL if this value doesn't exist.
 	 */
@@ -290,7 +299,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched integer.
-	 * 
+	 *
 	 * @param index - index of the watched integer.
 	 * @return The watched integer, or NULL if this value doesn't exist.
 	 */
@@ -300,7 +309,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched float.
-	 * 
+	 *
 	 * @param index - index of the watched float.
 	 * @return The watched float, or NULL if this value doesn't exist.
 	 */
@@ -310,7 +319,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched string.
-	 * 
+	 *
 	 * @param index - index of the watched string.
 	 * @return The watched string, or NULL if this value doesn't exist.
 	 */
@@ -320,7 +329,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched string.
-	 * 
+	 *
 	 * @param index - index of the watched string.
 	 * @return The watched string, or NULL if this value doesn't exist.
 	 */
@@ -330,7 +339,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Get a watched string.
-	 * 
+	 *
 	 * @param index - index of the watched string.
 	 * @return The watched string, or NULL if this value doesn't exist.
 	 */
@@ -340,7 +349,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Retrieve a watchable object by index.
-	 * 
+	 *
 	 * @param index Index of the object to retrieve.
 	 * @return The watched object or null if it doesn't exist.
 	 */
@@ -350,7 +359,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Retrieve a watchable object by watcher object.
-	 * 
+	 *
 	 * @param object The watcher object
 	 * @return The watched object or null if it doesn't exist.
 	 */
@@ -360,7 +369,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 		if (GETTER == null) {
 			FuzzyReflection fuzzy = FuzzyReflection.fromClass(handleType, true);
 
-			if (MinecraftReflection.watcherObjectExists()) {			
+			if (MinecraftReflection.watcherObjectExists()) {
 				GETTER = Accessors.getMethodAccessor(fuzzy.getMethod(FuzzyMethodContract.newBuilder()
 					.parameterExactType(object.getHandleType())
 					.returnTypeExact(Object.class)
@@ -387,11 +396,11 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	/**
 	 * Sets the DataWatcher Item at a given index to a new value. In 1.9 and up,
 	 * you cannot register objects without a watcher object.
-	 * 
+	 *
 	 * @param index Index of the object to set
 	 * @param value New value
 	 * @param update Whether or not to inform the client
-	 * 
+	 *
 	 * @see WrappedDataWatcher#setObject(WrappedDataWatcherObject, Object, boolean)
 	 * @throws IllegalArgumentException in 1.9 and up if there isn't already an
 	 * 		object at this index
@@ -413,12 +422,12 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Sets the DataWatcher Item at a given index to a new value.
-	 * 
+	 *
 	 * @param index Index of the object to set
 	 * @param serializer Serializer from {@link Registry#get(Class)}
 	 * @param value New value
 	 * @param update Whether or not to inform the client
-	 * 
+	 *
 	 * @see WrappedDataWatcher#setObject(WrappedDataWatcherObject, Object)
 	 */
 	public void setObject(int index, Serializer serializer, Object value, boolean update) {
@@ -434,11 +443,11 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Sets the DataWatcher Item at a given index to a new value.
-	 * 
+	 *
 	 * @param index Index of the object to set
 	 * @param value New value
 	 * @param update Whether or not to inform the client
-	 * 
+	 *
 	 * @see WrappedDataWatcher#setObject(int, Object, boolean)
 	 */
 	public void setObject(int index, WrappedWatchableObject value, boolean update) {
@@ -454,11 +463,11 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Sets the DataWatcher Item associated with a given watcher object to a new value.
-	 * 
+	 *
 	 * @param object Associated watcher object
 	 * @param value Wrapped value
 	 * @param update Whether or not to inform the client
-	 * 
+	 *
 	 * @see #setObject(WrappedDataWatcherObject, Object)
 	 */
 	public void setObject(WrappedDataWatcherObject object, WrappedWatchableObject value, boolean update) {
@@ -476,10 +485,10 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	 * Sets the DataWatcher Item associated with a given watcher object to a
 	 * new value. If there is not already an object at this index, the
 	 * specified watcher object must have a serializer.
-	 * 
+	 *
 	 * @param object Associated watcher object
 	 * @param value New value
-	 * 
+	 *
 	 * @throws IllegalArgumentException If the watcher object is null or must
 	 * 			have a serializer and does not have one.
 	 */
@@ -489,10 +498,10 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 		if (SETTER == null && REGISTER == null) {
 			FuzzyReflection fuzzy = FuzzyReflection.fromClass(handleType, true);
 			FuzzyMethodContract contract = FuzzyMethodContract.newBuilder()
-					.banModifier(Modifier.STATIC)
-					.requireModifier(Modifier.PUBLIC)
-					.parameterExactArray(object.getHandleType(), Object.class)
-					.build();
+				.banModifier(Modifier.STATIC)
+				.requireModifier(Modifier.PUBLIC)
+				.parameterExactArray(object.getHandleType(), Object.class)
+				.build();
 			List<Method> methods = fuzzy.getMethodList(contract);
 			for (Method method : methods) {
 				if (method.getName().equals("set") || method.getName().equals("watch") || method.getName().equals("b")) {
@@ -529,7 +538,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Clone the content of the current DataWatcher.
-	 * 
+	 *
 	 * @return A cloned data watcher.
 	 */
 	public WrappedDataWatcher deepClone() {
@@ -550,7 +559,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 	/**
 	 * Retrieve the data watcher associated with an entity.
-	 * 
+	 *
 	 * @param entity - the entity to read from.
 	 * @return Associated data watcher.
 	 */
@@ -594,20 +603,20 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	}
 
 	private static final ImmutableBiMap<Class<?>, Integer> CLASS_TO_ID = new ImmutableBiMap.Builder<Class<?>, Integer>()
-			.put(Byte.class, 0)
-			.put(Short.class, 1)
-			.put(Integer.class, 2)
-			.put(Float.class, 3)
-			.put(String.class, 4)
-			.put(MinecraftReflection.getItemStackClass(), 5)
-			.put(MinecraftReflection.getBlockPositionClass(), 6)
-			.put(Vector3F.getMinecraftClass(), 7)
-			.build();
+		.put(Byte.class, 0)
+		.put(Short.class, 1)
+		.put(Integer.class, 2)
+		.put(Float.class, 3)
+		.put(String.class, 4)
+		.put(MinecraftReflection.getItemStackClass(), 5)
+		.put(MinecraftReflection.getBlockPositionClass(), 6)
+		.put(Vector3F.getMinecraftClass(), 7)
+		.build();
 
 	/**
 	 * Retrieves the type ID associated with a given class. No longer supported
 	 * in 1.9 and up due to the removal of type IDs.
-	 * 
+	 *
 	 * @param clazz Class to find ID for
 	 * @return The ID, or null if not found
 	 */
@@ -618,7 +627,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	/**
 	 * Retrieves the class associated with a given type ID. No longer
 	 * supported in 1.9 and up due to the removal of type IDs.
-	 * 
+	 *
 	 * @param typeID ID to find Class for
 	 * @return The Class, or null if not found
 	 */
@@ -639,7 +648,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 			if (size() != other.size())
 				return false;
 
-			for (; first.hasNext() && second.hasNext();) {
+			for (; first.hasNext() && second.hasNext(); ) {
 				// See if the two elements are equal
 				if (!first.next().equals(second.next()))
 					return false;
@@ -666,7 +675,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	/**
 	 * Represents a DataWatcherObject in 1.9. In order to register an object,
 	 * the serializer must be specified.
-	 * 
+	 *
 	 * @author dmulloy2
 	 */
 	public static class WrappedDataWatcherObject {
@@ -682,7 +691,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 		/**
 		 * Creates a new watcher object from a NMS handle.
-		 * 
+		 *
 		 * @param handle The handle
 		 */
 		public WrappedDataWatcherObject(Object handle) {
@@ -692,7 +701,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 		/**
 		 * Creates a new watcher object from an index and serializer.
-		 * 
+		 *
 		 * @param index Index
 		 * @param serializer Serializer, see {@link Registry}
 		 */
@@ -732,7 +741,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 		/**
 		 * Gets this watcher object's index.
-		 * 
+		 *
 		 * @return The index
 		 */
 		public int getIndex() {
@@ -742,13 +751,13 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 		/**
 		 * Gets this watcher object's serializer. Will return null if the
 		 * serializer was never specified.
-		 * 
+		 *
 		 * @return The serializer, or null
 		 */
 		public Serializer getSerializer() {
 			if (getSerializer == null) {
 				getSerializer = Accessors.getMethodAccessor(FuzzyReflection.fromClass(HANDLE_TYPE, true)
-						.getMethodByParameters("getSerializer", MinecraftReflection.getDataWatcherSerializerClass(), new Class[0]));
+					.getMethodByParameters("getSerializer", MinecraftReflection.getDataWatcherSerializerClass(), new Class[0]));
 			}
 
 			Object serializer = getSerializer.invoke(handle);
@@ -848,7 +857,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 	/**
 	 * Represents a DataWatcherSerializer in 1.9. If a Serializer is optional,
 	 * values must be wrapped in a {@link Optional}.
-	 * 
+	 *
 	 * @author dmulloy2
 	 */
 	public static class Serializer extends AbstractWrapper {
@@ -859,7 +868,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 		/**
 		 * Constructs a new Serializer
-		 * 
+		 *
 		 * @param type Type it serializes
 		 * @param handle NMS handle
 		 * @param optional Whether or not it's {@link Optional}
@@ -874,7 +883,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 		/**
 		 * Gets the type this serializer serializes.
-		 * 
+		 *
 		 * @return The type
 		 */
 		public Class<?> getType() {
@@ -884,7 +893,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 		/**
 		 * Whether or not this serializer is optional, that is whether or not
 		 * the return type is wrapped in a {@link Optional}.
-		 * 
+		 *
 		 * @return True if it is, false if not
 		 */
 		public boolean isOptional() {
@@ -937,7 +946,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 		 * @return The serializer, or null if none exists
 		 */
 		public static Serializer get(Class<?> clazz) {
-			Validate.notNull(clazz,"Class cannot be null!");
+			Validate.notNull(clazz, "Class cannot be null!");
 			initialize();
 
 			for (Serializer serializer : REGISTRY) {
@@ -951,7 +960,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 
 		/**
 		 * Gets the first serializer associated with a given class and optional state.
-		 * 
+		 *
 		 * <p><b>Note</b>: If the serializer is optional, values <i>must<i> be
 		 * wrapped in an {@link Optional}
 		 *
@@ -1001,7 +1010,7 @@ public class WrappedDataWatcher extends AbstractWrapper implements Iterable<Wrap
 			}
 
 			List<Field> candidates = FuzzyReflection.fromClass(MinecraftReflection.getDataWatcherRegistryClass(), true)
-					.getFieldListByType(MinecraftReflection.getDataWatcherSerializerClass());
+				.getFieldListByType(MinecraftReflection.getDataWatcherSerializerClass());
 			for (Field candidate : candidates) {
 				Type generic = candidate.getGenericType();
 				if (generic instanceof ParameterizedType) {

@@ -21,61 +21,45 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.PacketType.Protocol;
 import com.comphenix.protocol.injector.StructureCache;
-import com.comphenix.protocol.reflect.*;
-import com.comphenix.protocol.reflect.cloning.*;
+import com.comphenix.protocol.reflect.FuzzyReflection;
+import com.comphenix.protocol.reflect.ObjectWriter;
+import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.reflect.cloning.AggregateCloner;
 import com.comphenix.protocol.reflect.cloning.AggregateCloner.BuilderParameters;
+import com.comphenix.protocol.reflect.cloning.BukkitCloner;
+import com.comphenix.protocol.reflect.cloning.Cloner;
+import com.comphenix.protocol.reflect.cloning.CollectionCloner;
+import com.comphenix.protocol.reflect.cloning.FieldCloner;
+import com.comphenix.protocol.reflect.cloning.GuavaOptionalCloner;
+import com.comphenix.protocol.reflect.cloning.ImmutableDetector;
+import com.comphenix.protocol.reflect.cloning.JavaOptionalCloner;
+import com.comphenix.protocol.reflect.cloning.SerializableCloner;
 import com.comphenix.protocol.reflect.fuzzy.FuzzyMethodContract;
 import com.comphenix.protocol.reflect.instances.MinecraftGenerator;
 import com.comphenix.protocol.utility.MinecraftMethods;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
-import com.comphenix.protocol.utility.StreamSerializer;
-import com.comphenix.protocol.wrappers.*;
-import com.comphenix.protocol.wrappers.EnumWrappers.*;
-import com.comphenix.protocol.wrappers.nbt.NbtBase;
-import com.comphenix.protocol.wrappers.nbt.NbtCompound;
-import com.comphenix.protocol.wrappers.nbt.NbtFactory;
+import com.comphenix.protocol.wrappers.Converters;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.WorldType;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.MerchantRecipe;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
-
 /**
  * Represents a Minecraft packet indirectly.
- * 
+ *
  * @author Kristian
  */
 @SuppressWarnings("unused")
@@ -90,30 +74,30 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 
 	// Used to clone packets
 	private static final AggregateCloner DEEP_CLONER = AggregateCloner
-			.newBuilder()
-			.instanceProvider(StructureCache::newPacket)
-			.andThen(BukkitCloner.class)
-			.andThen(ImmutableDetector.class)
-			.andThen(JavaOptionalCloner.class)
-			.andThen(GuavaOptionalCloner.class)
-			.andThen(CollectionCloner.class)
-			.andThen(getSpecializedDeepClonerFactory())
-			.build();
-	
-	private static final AggregateCloner SHALLOW_CLONER = AggregateCloner
-			.newBuilder()
-			.instanceProvider(StructureCache::newPacket)
-			.andThen(param -> {
-				if (param == null)
-					throw new IllegalArgumentException("Cannot be NULL.");
+		.newBuilder()
+		.instanceProvider(StructureCache::newPacket)
+		.andThen(BukkitCloner.class)
+		.andThen(ImmutableDetector.class)
+		.andThen(JavaOptionalCloner.class)
+		.andThen(GuavaOptionalCloner.class)
+		.andThen(CollectionCloner.class)
+		.andThen(getSpecializedDeepClonerFactory())
+		.build();
 
-				return new FieldCloner(param.getAggregateCloner(), param.getInstanceProvider()) {{
-					// Use a default writer with no concept of cloning
-					writer = new ObjectWriter();
-				}};
-			})
-			.build();
-	
+	private static final AggregateCloner SHALLOW_CLONER = AggregateCloner
+		.newBuilder()
+		.instanceProvider(StructureCache::newPacket)
+		.andThen(param -> {
+			if (param == null)
+				throw new IllegalArgumentException("Cannot be NULL.");
+
+			return new FieldCloner(param.getAggregateCloner(), param.getInstanceProvider()) {{
+				// Use a default writer with no concept of cloning
+				writer = new ObjectWriter();
+			}};
+		})
+		.build();
+
 	// Packets that cannot be cloned by our default deep cloner
 	private static final Set<PacketType> FAST_CLONE_UNSUPPORTED = Sets.newHashSet(
 		PacketType.Play.Server.BOSS,
@@ -124,30 +108,33 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 
 	/**
 	 * Creates a packet container for a new packet.
+	 *
 	 * @param type - the type of the packet to create.
 	 */
 	public PacketContainer(PacketType type) {
 		this(type, StructureCache.newPacket(type));
 	}
-	
+
 	/**
 	 * Creates a packet container for an existing packet.
+	 *
 	 * @param type - Type of the given packet.
 	 * @param handle - contained packet.
 	 */
 	public PacketContainer(PacketType type, Object handle) {
 		this(type, handle, StructureCache.getStructure(type).withTarget(handle));
 	}
-	
+
 	/**
 	 * Creates a packet container for an existing packet.
+	 *
 	 * @param type - Type of the given packet.
 	 * @param handle - contained packet.
 	 * @param structure - structure modifier.
 	 */
 	public PacketContainer(PacketType type, Object handle, StructureModifier<Object> structure) {
 		super(handle, structure);
-		
+
 		this.type = type;
 
 		setDefaults();
@@ -163,6 +150,7 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 
 	/**
 	 * Construct a new packet container from a given handle.
+	 *
 	 * @param packet - the NMS packet.
 	 * @return The packet container.
 	 */
@@ -170,23 +158,25 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 		PacketType type = PacketType.fromClass(packet.getClass());
 		return new PacketContainer(type, packet);
 	}
-	
+
 	/**
 	 * For serialization.
 	 */
 	protected PacketContainer() {
 	}
-	
+
 	/**
 	 * Retrieves the underlying Minecraft packet.
+	 *
 	 * @return Underlying Minecraft packet.
 	 */
 	public Object getHandle() {
 		return handle;
 	}
-	
+
 	/**
 	 * Retrieves the generic structure modifier for this packet.
+	 *
 	 * @return Structure modifier.
 	 */
 	public StructureModifier<Object> getModifier() {
@@ -206,30 +196,31 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 	 */
 	@Deprecated
 	public int getId() {
-    	return type.getCurrentId();
+		return type.getCurrentId();
 	}
 
 	/**
 	 * Retrieve the packet type of this packet.
+	 *
 	 * @return The packet type.
 	 */
 	public PacketType getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Create a shallow copy of the current packet.
 	 * <p>
 	 * This merely writes the content of each field to the new class directly,
 	 * without performing any expensive copies.
-	 * 
+	 *
 	 * @return A shallow copy of the current packet.
 	 */
 	public PacketContainer shallowClone() {
 		Object clonedPacket = SHALLOW_CLONER.clone(getHandle());
 		return new PacketContainer(getType(), clonedPacket);
 	}
-	
+
 	/**
 	 * Create a deep copy of the current packet.
 	 * <p>
@@ -237,7 +228,7 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 	 * known immutable objects and primitive types.
 	 * <p>
 	 * Note that the inflated buffers in packet 51 and 56 will be copied directly to save memory.
-	 * 
+	 *
 	 * @return A deep copy of the current packet.
 	 */
 	public PacketContainer deepClone() {
@@ -258,7 +249,7 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 
 		return new PacketContainer(getType(), clonedPacket);
 	}
-		
+
 	// To save space, we'll skip copying the inflated buffers in packet 51 and 56
 	private static Function<BuilderParameters, Cloner> getSpecializedDeepClonerFactory() {
 		// Look at what you've made me do Java, look at it!!
@@ -275,15 +266,17 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 								modifierDest.write(fieldIndex, modifierSource.read(fieldIndex));
 							else
 								defaultTransform(modifierSource, modifierDest, getDefaultCloner(), fieldIndex);
-						};
+						}
+
+						;
 					};
 				}};
 			}
 		};
 	}
-	
+
 	private void writeObject(ObjectOutputStream output) throws IOException {
-	    // Default serialization
+		// Default serialization
 		output.defaultWriteObject();
 
 		// We'll take care of NULL packets as well
@@ -305,34 +298,34 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 	}
 
 	private void readObject(ObjectInputStream input) throws ClassNotFoundException, IOException {
-	    // Default deserialization
+		// Default deserialization
 		input.defaultReadObject();
-		
+
 		// Get structure modifier
 		structureModifier = StructureCache.getStructure(type);
 
-	    // Don't read NULL packets
-	    if (input.readBoolean()) {
+		// Don't read NULL packets
+		if (input.readBoolean()) {
 			ByteBuf buffer = createPacketBuffer();
 			buffer.writeBytes(input, input.readInt());
-	    	
-	    	// Create a default instance of the packet
+
+			// Create a default instance of the packet
 			if (MinecraftVersion.CAVES_CLIFFS_1.atOrAbove()) {
 				Object serializer = MinecraftReflection.getPacketDataSerializer(buffer);
 
 				try {
 					handle = type.getPacketClass()
-							.getConstructor(MinecraftReflection.getPacketDataSerializerClass())
-							.newInstance(serializer);
+						.getConstructor(MinecraftReflection.getPacketDataSerializerClass())
+						.newInstance(serializer);
 				} catch (ReflectiveOperationException ex) {
 					// they might have a static method to create them instead
 					Method method = FuzzyReflection.fromClass(type.getPacketClass(), true)
-							.getMethod(FuzzyMethodContract
-									.newBuilder()
-									.requireModifier(Modifier.STATIC)
-									.returnTypeExact(type.getPacketClass())
-									.parameterExactArray(MinecraftReflection.getPacketDataSerializerClass())
-									.build());
+						.getMethod(FuzzyMethodContract
+							.newBuilder()
+							.requireModifier(Modifier.STATIC)
+							.returnTypeExact(type.getPacketClass())
+							.parameterExactArray(MinecraftReflection.getPacketDataSerializerClass())
+							.build());
 					try {
 						handle = method.invoke(null, serializer);
 					} catch (ReflectiveOperationException ignored) {
@@ -353,14 +346,15 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 					throw new IOException("Could not deserialize Minecraft packet.", e);
 				}
 			}
-			
+
 			// And we're done
 			structureModifier = structureModifier.withTarget(handle);
-	    }
+		}
 	}
-	
+
 	/**
 	 * Construct a new packet data serializer.
+	 *
 	 * @return The packet data serializer.
 	 */
 	public static ByteBuf createPacketBuffer() {
@@ -402,6 +396,7 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 
 	/**
 	 * Removes the metadata for a given key if it exists.
+	 *
 	 * @param key Key to remove meta for
 	 */
 	public void removeMeta(String key) {
@@ -410,6 +405,7 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 
 	/**
 	 * Retrieve the cached method concurrently.
+	 *
 	 * @param lookup - a lazy lookup cache.
 	 * @param handleClass - class type of the current packet.
 	 * @param methodName - name of method to retrieve.
@@ -419,23 +415,23 @@ public class PacketContainer extends AbstractStructure implements Serializable {
 	private Method getMethodLazily(ConcurrentMap<Class<?>, Method> lookup,
 								   Class<?> handleClass, String methodName, Class<?> parameterClass) {
 		Method method = lookup.get(handleClass);
-		
+
 		// Atomic operation
 		if (method == null) {
 			Method initialized = FuzzyReflection.fromClass(handleClass).getMethod(
-							FuzzyMethodContract.newBuilder().
-							parameterCount(1).
-							parameterDerivedOf(parameterClass).
-							returnTypeVoid().
-							build());
+				FuzzyMethodContract.newBuilder().
+					parameterCount(1).
+					parameterDerivedOf(parameterClass).
+					returnTypeVoid().
+					build());
 			method = lookup.putIfAbsent(handleClass, initialized);
-			
+
 			// Use our version if we succeeded
 			if (method == null) {
 				method = initialized;
 			}
 		}
-		
+
 		return method;
 	}
 

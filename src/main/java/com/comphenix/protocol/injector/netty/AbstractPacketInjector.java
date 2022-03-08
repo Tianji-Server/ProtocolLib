@@ -9,7 +9,7 @@ import com.comphenix.protocol.injector.packet.PacketInjector;
 
 public abstract class AbstractPacketInjector implements PacketInjector {
 	private PacketTypeSet reveivedFilters;
-	
+
 	public AbstractPacketInjector(PacketTypeSet reveivedFilters) {
 		this.reveivedFilters = reveivedFilters;
 	}

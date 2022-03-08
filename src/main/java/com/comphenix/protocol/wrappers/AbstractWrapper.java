@@ -4,14 +4,16 @@ import com.google.common.base.Preconditions;
 
 /**
  * Represents a wrapper for an NMS object.
+ *
  * @author Kristian
  */
 public abstract class AbstractWrapper {
 	protected Object handle;
 	protected Class<?> handleType;
-	
+
 	/**
 	 * Construct a new NMS wrapper.
+	 *
 	 * @param handleType - the NMS handle type.
 	 */
 	public AbstractWrapper(Class<?> handleType) {
@@ -20,6 +22,7 @@ public abstract class AbstractWrapper {
 
 	/**
 	 * Set the underlying NMS object.
+	 *
 	 * @param handle - the NMS object.
 	 * @throws IllegalArgumentException If the handle is NULL.
 	 * @throws IllegalArgumentException If the handle is not assignable to {@link #getHandleType()}.
@@ -31,17 +34,19 @@ public abstract class AbstractWrapper {
 			throw new IllegalArgumentException("handle (" + handle + ") is not a " + handleType + ", but " + handle.getClass());
 		this.handle = handle;
 	}
-	
+
 	/**
 	 * Retrieves the underlying NMS object.
+	 *
 	 * @return The underlying NMS object.
 	 */
 	public Object getHandle() {
 		return handle;
 	}
-	
+
 	/**
 	 * Retrieve the type of the handle.
+	 *
 	 * @return The type of the handle.
 	 */
 	public Class<?> getHandleType() {

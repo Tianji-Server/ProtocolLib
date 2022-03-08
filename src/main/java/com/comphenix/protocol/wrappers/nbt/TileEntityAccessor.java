@@ -19,7 +19,6 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
 
 import com.google.common.collect.Maps;
-
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.jar.asm.ClassReader;
@@ -27,16 +26,16 @@ import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import net.bytebuddy.matcher.ElementMatchers;
-
 import org.bukkit.block.BlockState;
 
 /**
  * Manipulate tile entities.
+ *
  * @author Kristian
  */
 class TileEntityAccessor<T extends BlockState> {
 	private static final boolean BLOCK_DATA_INCL = MinecraftVersion.NETHER_UPDATE.atOrAbove()
-			&& !MinecraftVersion.CAVES_CLIFFS_1.atOrAbove();
+		&& !MinecraftVersion.CAVES_CLIFFS_1.atOrAbove();
 
 	/**
 	 * Token indicating that the given block state doesn't contain any tile entities.
@@ -60,6 +59,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Construct a new tile entity accessor.
+	 *
 	 * @param tileEntityField - the tile entity field.
 	 * @param state - the block state.
 	 */
@@ -79,19 +79,19 @@ class TileEntityAccessor<T extends BlockState> {
 
 			FuzzyReflection fuzzy = FuzzyReflection.fromClass(tileEntityClass, false);
 			writeCompound = Accessors.getMethodAccessor(fuzzy.getMethod(
-					FuzzyMethodContract.newBuilder()
-							.banModifier(Modifier.STATIC)
-							.returnTypeVoid()
-							.parameterExactArray(iBlockData, nbtCompound)
-							.build()));
+				FuzzyMethodContract.newBuilder()
+					.banModifier(Modifier.STATIC)
+					.returnTypeVoid()
+					.parameterExactArray(iBlockData, nbtCompound)
+					.build()));
 
 			// this'll point to 2 methods, one of which points to the other
 			readCompound = Accessors.getMethodAccessor(fuzzy.getMethod(
-					FuzzyMethodContract.newBuilder()
-							.banModifier(Modifier.STATIC)
-							.returnTypeExact(nbtCompound)
-							.parameterExactArray(nbtCompound)
-							.build()));
+				FuzzyMethodContract.newBuilder()
+					.banModifier(Modifier.STATIC)
+					.returnTypeExact(nbtCompound)
+					.parameterExactArray(nbtCompound)
+					.build()));
 		}
 
 		// Possible read/write methods
@@ -115,6 +115,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Find the read/write methods in TileEntity.
+	 *
 	 * @throws IOException If we cannot find these methods.
 	 */
 	private void findMethodsUsingASM() throws IOException {
@@ -140,8 +141,8 @@ class TileEntityAccessor<T extends BlockState> {
 						public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean intf) {
 							// This must be a virtual call on NBTTagCompound that accepts a String
 							if (opcode == Opcodes.INVOKEVIRTUAL
-									&& tagCompoundName.equals(owner)
-									&& desc.startsWith("(Ljava/lang/String")) {
+								&& tagCompoundName.equals(owner)
+								&& desc.startsWith("(Ljava/lang/String")) {
 
 								// Is this a write call?
 								if (desc.endsWith(")V")) {
@@ -170,8 +171,7 @@ class TileEntityAccessor<T extends BlockState> {
 		}, 0);
 	}
 
-	private static Constructor<?> setupNBTCompoundParserConstructor()
-	{
+	private static Constructor<?> setupNBTCompoundParserConstructor() {
 		final Class<?> nbtCompoundClass = MinecraftReflection.getNBTCompoundClass();
 		try {
 			return ByteBuddyFactory.getInstance()
@@ -195,11 +195,12 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Find the read/write methods in TileEntity.
+	 *
 	 * @param blockState - the block state.
 	 * @throws IOException If we cannot find these methods.
 	 */
 	private void findMethodUsingByteBuddy(T blockState) throws IllegalAccessException, InvocationTargetException,
-			InstantiationException {
+		InstantiationException {
 		if (nbtCompoundParserConstructor == null)
 			nbtCompoundParserConstructor = setupNBTCompoundParserConstructor();
 
@@ -210,7 +211,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 		// Look in every read/write like method
 		for (Method method : FuzzyReflection.fromObject(tileEntity, true).
-				getMethodListByParameters(Void.TYPE, new Class<?>[] { nbtCompoundClass })) {
+			getMethodListByParameters(Void.TYPE, new Class<?>[] { nbtCompoundClass })) {
 
 			try {
 				method.invoke(tileEntity, compound);
@@ -230,6 +231,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Retrieve the JAR name (slash instead of dots) of the given class.
+	 *
 	 * @param clazz - the class.
 	 * @return The JAR name.
 	 */
@@ -239,6 +241,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Read the NBT compound that represents a given tile entity.
+	 *
 	 * @param state - tile entity represented by a block state.
 	 * @return The compound.
 	 */
@@ -253,6 +256,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Write the NBT compound as a tile entity.
+	 *
 	 * @param state - target block state.
 	 * @param compound - the compound.
 	 */
@@ -270,6 +274,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * Retrieve an accessor for the tile entity at a specific location.
+	 *
 	 * @param state - the block state.
 	 * @return The accessor, or NULL if this block state doesn't contain any tile entities.
 	 */
@@ -279,7 +284,7 @@ class TileEntityAccessor<T extends BlockState> {
 		TileEntityAccessor<?> accessor = cachedAccessors.get(craftBlockState);
 
 		// Attempt to construct the accessor
-		if (accessor == null ) {
+		if (accessor == null) {
 			TileEntityAccessor<?> created = null;
 			FieldAccessor field = null;
 
@@ -303,6 +308,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * An internal exception used to detect read methods.
+	 *
 	 * @author Kristian
 	 */
 	private static class ReadMethodException extends RuntimeException {
@@ -315,6 +321,7 @@ class TileEntityAccessor<T extends BlockState> {
 
 	/**
 	 * An internal exception used to detect write methods.
+	 *
 	 * @author Kristian
 	 */
 	private static class WriteMethodException extends RuntimeException {

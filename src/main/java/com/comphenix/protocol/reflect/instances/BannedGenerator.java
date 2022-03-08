@@ -7,20 +7,21 @@ import com.comphenix.protocol.reflect.fuzzy.FuzzyMatchers;
 
 /**
  * Generator that ensures certain types will never be created.
- * 
+ *
  * @author Kristian
  */
 public class BannedGenerator implements InstanceProvider {
 	private AbstractFuzzyMatcher<Class<?>> classMatcher;
-	
+
 	/**
 	 * Construct a generator that ensures any class that matches the given matcher is never constructed.
+	 *
 	 * @param classMatcher - a class matcher.
 	 */
 	public BannedGenerator(AbstractFuzzyMatcher<Class<?>> classMatcher) {
 		this.classMatcher = classMatcher;
 	}
-	
+
 	public BannedGenerator(Class<?>... classes) {
 		this.classMatcher = FuzzyMatchers.matchAnyOf(classes);
 	}

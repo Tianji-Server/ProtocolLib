@@ -1,7 +1,12 @@
 package com.comphenix.protocol.wrappers;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.comphenix.protocol.PacketType;
@@ -10,18 +15,19 @@ import com.comphenix.protocol.ProtocolLogger;
 import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.FuzzyReflection;
 import com.comphenix.protocol.reflect.accessors.Accessors;
-import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.utility.MinecraftReflection;
-import com.google.common.collect.Maps;
+import com.comphenix.protocol.utility.MinecraftVersion;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.Validate;
 import org.bukkit.GameMode;
 
 /**
  * Represents a generic enum converter.
+ *
  * @author Kristian
  */
-@SuppressWarnings({"unchecked","rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public abstract class EnumWrappers {
 	public enum ClientCommand {
 		PERFORM_RESPAWN,
@@ -52,7 +58,7 @@ public abstract class EnumWrappers {
 	 * Represents a native game mode in Minecraft.
 	 * <p>
 	 * Not to be confused with {@link GameMode} in Bukkit.
-	 * 
+	 *
 	 * @author Kristian
 	 */
 	public enum NativeGameMode {
@@ -71,7 +77,7 @@ public abstract class EnumWrappers {
 		 * Gets this NativeGameMode's Bukkit equivalent.
 		 * <p>
 		 * Note: There is not a Bukkit equivalent for NOT_SET or NONE
-		 * 
+		 *
 		 * @return The Bukkit equivalent, or null if one does not exist.
 		 */
 		public GameMode toBukkit() {
@@ -91,7 +97,7 @@ public abstract class EnumWrappers {
 
 		/**
 		 * Obtains the given GameMode's NativeGameMode equivalent.
-		 * 
+		 *
 		 * @param mode Bukkit GameMode
 		 * @return The NativeGameMode equivalent, or null if one does not exist.
 		 */
@@ -150,7 +156,7 @@ public abstract class EnumWrappers {
 		ENTITY_DIED
 	}
 
-	public enum PlayerDigType implements AliasedEnum{
+	public enum PlayerDigType implements AliasedEnum {
 		START_DESTROY_BLOCK,
 		ABORT_DESTROY_BLOCK,
 		STOP_DESTROY_BLOCK,
@@ -160,9 +166,11 @@ public abstract class EnumWrappers {
 		SWAP_HELD_ITEMS("SWAP_ITEM_WITH_OFFHAND");
 
 		String[] aliases;
+
 		PlayerDigType(String... aliases) {
 			this.aliases = aliases;
 		}
+
 		@Override
 		public String[] getAliases() {
 			return aliases;
@@ -181,6 +189,7 @@ public abstract class EnumWrappers {
 		START_FALL_FLYING;
 
 		String[] aliases;
+
 		PlayerAction(String... aliases) {
 			this.aliases = aliases;
 		}
@@ -314,6 +323,7 @@ public abstract class EnumWrappers {
 		VOICE("voice");
 
 		private static final Map<String, SoundCategory> LOOKUP;
+
 		static {
 			LOOKUP = new HashMap<>();
 			for (SoundCategory category : values()) {
@@ -358,7 +368,7 @@ public abstract class EnumWrappers {
 		WEST,
 		EAST
 	}
-	
+
 	public enum ChatType {
 		CHAT,
 		SYSTEM,
@@ -368,41 +378,43 @@ public abstract class EnumWrappers {
 			return (byte) ordinal();
 		}
 	}
-	
+
 	/**
 	 * Wrapped EntityPose enum for use in Entity Metadata Packet.<br>
-	 * 
-	 * @apiNote Remember to use {@link #toNms()} when adding to a {@link WrappedDataWatcher}. <br>
-	 *          Serializer is obtained using Registry.get(EnumWrappers.getEntityPoseClass())
-	 * @since 1.13
+	 *
 	 * @author Lewys Davies (Lew_)
+	 * @apiNote Remember to use {@link #toNms()} when adding to a {@link WrappedDataWatcher}. <br>
+	 * Serializer is obtained using Registry.get(EnumWrappers.getEntityPoseClass())
+	 * @since 1.13
 	 */
 	public enum EntityPose {
-		STANDING, 
-		FALL_FLYING, 
-		SLEEPING, 
-		SWIMMING, 
-		SPIN_ATTACK, 
+		STANDING,
+		FALL_FLYING,
+		SLEEPING,
+		SWIMMING,
+		SPIN_ATTACK,
 		CROUCHING,
 		LONG_JUMPING,
 		DYING;
-		
+
 		private final static EquivalentConverter<EntityPose> POSE_CONVERTER = EnumWrappers.getEntityPoseConverter();
-		
+
 		/**
 		 * @param nms net.minecraft.server.EntityPose Object
 		 * @return Wrapped {@link EntityPose}
 		 */
 		public static EntityPose fromNms(Object nms) {
-			if(POSE_CONVERTER == null) {
+			if (POSE_CONVERTER == null) {
 				throw new IllegalStateException("EntityPose is only available in Minecraft version 1.13 +");
 			}
 			return POSE_CONVERTER.getSpecific(nms);
 		}
-		
-		/** @return net.minecraft.server.EntityPose enum equivalent to this wrapper enum */
+
+		/**
+		 * @return net.minecraft.server.EntityPose enum equivalent to this wrapper enum
+		 */
 		public Object toNms() {
-			if(POSE_CONVERTER == null) {
+			if (POSE_CONVERTER == null) {
 				throw new IllegalStateException("EntityPose is only available in Minecraft version 1.13 +");
 			}
 			return POSE_CONVERTER.getGeneric(this);
@@ -426,10 +438,14 @@ public abstract class EnumWrappers {
 
 		public static Dimension fromId(int id) {
 			switch (id) {
-				case 0: return Dimension.OVERWORLD;
-				case -1: return Dimension.THE_NETHER;
-				case 1: return Dimension.THE_END;
-				default: throw new IllegalArgumentException("Invalid dimension ID: " + id);
+				case 0:
+					return Dimension.OVERWORLD;
+				case -1:
+					return Dimension.THE_NETHER;
+				case 1:
+					return Dimension.THE_END;
+				default:
+					throw new IllegalArgumentException("Invalid dimension ID: " + id);
 			}
 		}
 	}
@@ -553,6 +569,7 @@ public abstract class EnumWrappers {
 
 	/**
 	 * Retrieve the enum field with the given declaration index (in relation to the other enums).
+	 *
 	 * @param clazz - the declaration class.
 	 * @param index - the enum index.
 	 * @return The type of the enum field.
@@ -676,12 +693,12 @@ public abstract class EnumWrappers {
 		initialize();
 		return DIRECTION_CLASS;
 	}
-	
+
 	public static Class<?> getChatTypeClass() {
 		initialize();
 		return CHAT_TYPE_CLASS;
 	}
-	
+
 	public static Class<?> getEntityPoseClass() {
 		initialize();
 		return ENTITY_POSE_CLASS;
@@ -763,22 +780,23 @@ public abstract class EnumWrappers {
 	public static EquivalentConverter<Direction> getDirectionConverter() {
 		return new EnumConverter<>(getDirectionClass(), Direction.class);
 	}
-	
+
 	public static EquivalentConverter<ChatType> getChatTypeConverter() {
 		return new EnumConverter<>(getChatTypeClass(), ChatType.class);
 	}
-	
+
 	/**
-	 * @since 1.13+
 	 * @return {@link EnumConverter} or null (if bellow 1.13 / nms EnumPose class cannot be found)
+	 * @since 1.13+
 	 */
 	public static EquivalentConverter<EntityPose> getEntityPoseConverter() {
-		if(getEntityPoseClass() == null) return null;
+		if (getEntityPoseClass() == null) return null;
 		return new EnumConverter<>(getEntityPoseClass(), EntityPose.class);
 	}
 
 	/**
 	 * Retrieve a generic enum converter for use with StructureModifiers.
+	 *
 	 * @param genericClass - Generic nms enum class
 	 * @param specificType - Specific enum class
 	 * @return A generic enum converter
@@ -888,6 +906,7 @@ public abstract class EnumWrappers {
 
 	/**
 	 * Used for classes where it's an enum in everything but name
+	 *
 	 * @param <T> Generic type
 	 */
 	public static class FauxEnumConverter<T extends Enum<T>> implements EquivalentConverter<T> {
@@ -896,8 +915,8 @@ public abstract class EnumWrappers {
 		private final Map<Object, T> lookup;
 
 		public FauxEnumConverter(Class<T> specific, Class<?> generic) {
-			Validate.notNull(specific,"specific class cannot be null");
-			Validate.notNull(generic,"generic class cannot be null");
+			Validate.notNull(specific, "specific class cannot be null");
+			Validate.notNull(generic, "generic class cannot be null");
 
 			this.specificClass = specific;
 			this.genericClass = generic;
@@ -909,9 +928,9 @@ public abstract class EnumWrappers {
 			Validate.notNull(specific, "specific object cannot be null");
 
 			return Accessors
-					.getFieldAccessor(genericClass, specific
-							.name(), false)
-					.get(null);
+				.getFieldAccessor(genericClass, specific
+					.name(), false)
+				.get(null);
 		}
 
 		@Override
@@ -921,14 +940,15 @@ public abstract class EnumWrappers {
 			return lookup.computeIfAbsent(generic, x -> {
 				for (Field field : genericClass.getDeclaredFields()) {
 					try {
-						 if (!field.isAccessible()) {
+						if (!field.isAccessible()) {
 							field.setAccessible(true);
 						}
 
 						if (field.get(null) == generic) {
 							return Enum.valueOf(specificClass, field.getName().toUpperCase());
 						}
-					} catch (ReflectiveOperationException ignored) { }
+					} catch (ReflectiveOperationException ignored) {
+					}
 				}
 
 				throw new IllegalArgumentException("Could not find ProtocolLib wrapper for " + generic);

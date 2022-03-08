@@ -19,12 +19,13 @@ import org.bukkit.util.Vector;
 
 /**
  * Represents an entity used action used in the UseEntity packet sent by the client.
+ *
  * @author derklaro
  */
 public class WrappedEnumEntityUseAction extends AbstractWrapper implements ClonableWrapper {
 
 	public static final EquivalentConverter<WrappedEnumEntityUseAction> CONVERTER = Converters.handle(AbstractWrapper::getHandle,
-			WrappedEnumEntityUseAction::fromHandle, WrappedEnumEntityUseAction.class);
+		WrappedEnumEntityUseAction::fromHandle, WrappedEnumEntityUseAction.class);
 
 	private static final Class<?> PACKET_CLASS = PacketType.Play.Client.USE_ENTITY.getPacketClass();
 	private static final Class<?>[] DECLARED_CLASSES = PACKET_CLASS.getDeclaredClasses();
@@ -34,13 +35,13 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	private static final ConstructorAccessor INTERACT = useAction(EnumWrappers.getHandClass());
 	private static final ConstructorAccessor INTERACT_AT = useAction(EnumWrappers.getHandClass(),
-			MinecraftReflection.getVec3DClass());
+		MinecraftReflection.getVec3DClass());
 
 	private static final Object ATTACK = Accessors.getFieldAccessor(FuzzyReflection.fromClass(PACKET_CLASS, true)
-			.getField(FuzzyFieldContract.newBuilder()
-					.requireModifier(Modifier.STATIC)
-					.typeExact(MinecraftReflection.getEnumEntityUseActionClass())
-					.build())
+		.getField(FuzzyFieldContract.newBuilder()
+			.requireModifier(Modifier.STATIC)
+			.typeExact(MinecraftReflection.getEnumEntityUseActionClass())
+			.build())
 	).get(null);
 	private static final WrappedEnumEntityUseAction ATTACK_WRAPPER = new WrappedEnumEntityUseAction(ATTACK);
 
@@ -51,6 +52,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Construct a new wrapper for the entity use action class in the UseEntity packet.
+	 *
 	 * @param handle - the NMS handle.
 	 */
 	private WrappedEnumEntityUseAction(Object handle) {
@@ -62,6 +64,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Finds a constructor of a declared class in the UseEntity class. Used to find the action class implementations.
+	 *
 	 * @param parameterTypes - the types the constructor of the class must have.
 	 * @return a constructor for a matching class.
 	 * @throws IllegalArgumentException if no constructor was found.
@@ -74,11 +77,12 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 			}
 		}
 		throw new IllegalArgumentException(
-				"No constructor with " + Arrays.toString(parameterTypes) + " in " + PACKET_CLASS);
+			"No constructor with " + Arrays.toString(parameterTypes) + " in " + PACKET_CLASS);
 	}
 
 	/**
 	 * Construct a new wrapper for the entity use action class in the UseEntity packet.
+	 *
 	 * @param handle - the NMS handle.
 	 * @return the created wrapper.
 	 */
@@ -88,6 +92,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get the jvm static action for attacking an entity.
+	 *
 	 * @return the action for an entity attack.
 	 */
 	public static WrappedEnumEntityUseAction attack() {
@@ -96,6 +101,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get an action for interacting with an entity.
+	 *
 	 * @param hand - the hand used for the interact.
 	 * @return the action for an interact.
 	 */
@@ -106,18 +112,20 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get an action for interacting with an entity at a specific location.
+	 *
 	 * @param hand - the hand used for the interact.
 	 * @param vector - the position of the interact.
 	 * @return the action for an interact_at.
 	 */
 	public static WrappedEnumEntityUseAction interactAt(Hand hand, Vector vector) {
 		Object handle = INTERACT_AT.invoke(EnumWrappers.getHandConverter().getGeneric(hand),
-				BukkitConverters.getVectorConverter().getGeneric(vector));
+			BukkitConverters.getVectorConverter().getGeneric(vector));
 		return new WrappedEnumEntityUseAction(handle);
 	}
 
 	/**
 	 * Get the action used for the interact.
+	 *
 	 * @return the interact action.
 	 */
 	public EntityUseAction getAction() {
@@ -126,6 +134,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get the hand used for the interact. Only available if this represents interact or interact_at.
+	 *
 	 * @return the hand used for the interact.
 	 * @throws IllegalArgumentException if called for attack.
 	 */
@@ -135,6 +144,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Sets the hand used for the interact.
+	 *
 	 * @param hand the used hand.
 	 * @throws IllegalArgumentException if called for attack.
 	 */
@@ -144,6 +154,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get the position of the interact. Only available if this represents interact_at.
+	 *
 	 * @return the position of the interact.
 	 * @throws IllegalArgumentException if called for attack or interact.
 	 */
@@ -153,6 +164,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Sets the position of the interact.
+	 *
 	 * @param position the position.
 	 * @throws IllegalArgumentException if called for attack or interact.
 	 */
@@ -176,6 +188,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get a field accessor for the hand in the interact and interact_at type.
+	 *
 	 * @return a field accessor for the hand field.
 	 * @throws IllegalArgumentException if called for attack.
 	 */
@@ -188,6 +201,7 @@ public class WrappedEnumEntityUseAction extends AbstractWrapper implements Clona
 
 	/**
 	 * Get a field accessor for the position in the interact_at type.
+	 *
 	 * @return a field accessor for the position field.
 	 * @throws IllegalArgumentException if called for attack or interact.
 	 */

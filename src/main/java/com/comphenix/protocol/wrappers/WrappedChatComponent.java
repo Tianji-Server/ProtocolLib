@@ -2,18 +2,19 @@ package com.comphenix.protocol.wrappers;
 
 import java.io.StringReader;
 
-import org.bukkit.ChatColor;
-
 import com.comphenix.protocol.reflect.FieldUtils;
 import com.comphenix.protocol.reflect.FuzzyReflection;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.ConstructorAccessor;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
+
 import com.google.common.base.Preconditions;
+import org.bukkit.ChatColor;
 
 /**
  * Represents a chat component added in Minecraft 1.7.2
+ *
  * @author Kristian
  */
 public class WrappedChatComponent extends AbstractWrapper implements ClonableWrapper {
@@ -33,7 +34,7 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 
 		// Retrieve the correct methods
 		SERIALIZE_COMPONENT = Accessors.getMethodAccessor(fuzzy.getMethodByParameters("serialize", /* a */
-				String.class, new Class<?>[] { COMPONENT }));
+			String.class, new Class<?>[] { COMPONENT }));
 
 		try {
 			GSON = FieldUtils.readStaticField(fuzzy.getFieldByType("gson", GSON_CLASS), true);
@@ -68,36 +69,39 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 	}
 
 	private transient String cache;
-	
+
 	private WrappedChatComponent(Object handle, String cache) {
 		super(MinecraftReflection.getIChatBaseComponentClass());
 		setHandle(handle);
 		this.cache = cache;
 	}
-	
+
 	/**
 	 * Construct a new chat component wrapper around the given NMS object.
+	 *
 	 * @param handle - the NMS object.
 	 * @return The wrapper.
 	 */
 	public static WrappedChatComponent fromHandle(Object handle) {
 		return new WrappedChatComponent(handle, null);
 	}
-	
+
 	/**
 	 * Construct a new chat component wrapper from the given JSON string.
+	 *
 	 * @param json - the json.
 	 * @return The chat component wrapper.
 	 */
 	public static WrappedChatComponent fromJson(String json) {
 		return new WrappedChatComponent(deserialize(json), json);
 	}
-	
+
 	/**
 	 * Construct a wrapper around a new text chat component with the given text.
 	 * <p>
 	 * Note: {@link #fromLegacyText(String)} is preferred for text that contains
 	 * legacy formatting codes since it will translate them to the JSON equivalent.
+	 *
 	 * @param text - the text of the text chat component.
 	 * @return The wrapper around the new chat component.
 	 */
@@ -105,18 +109,19 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 		Preconditions.checkNotNull(text, "text cannot be NULL.");
 		return fromHandle(CONSTRUCT_TEXT_COMPONENT.invoke(text));
 	}
-	
+
 	/**
 	 * Construct an array of chat components from a standard Minecraft message.
 	 * <p>
 	 * This uses {@link ChatColor} for formating.
+	 *
 	 * @param message - the message.
 	 * @return The equivalent chat components.
 	 */
 	public static WrappedChatComponent[] fromChatMessage(String message) {
 		Object[] components = (Object[]) CONSTRUCT_COMPONENT.invoke(null, message, false);
 		WrappedChatComponent[] result = new WrappedChatComponent[components.length];
-		
+
 		for (int i = 0; i < components.length; i++) {
 			result[i] = fromHandle(components[i]);
 		}
@@ -126,6 +131,7 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 	/**
 	 * Construct a single chat component from a standard Minecraft message
 	 * (with legacy formatting codes), preserving multiple lines.
+	 *
 	 * @param message - the message.
 	 * @return The equivalent chat component.
 	 */
@@ -139,6 +145,7 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 	 * Retrieve a copy of this component as a JSON string.
 	 * <p>
 	 * Note that any modifications to this JSON string will not update the current component.
+	 *
 	 * @return The JSON representation of this object.
 	 */
 	public String getJson() {
@@ -146,10 +153,11 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 			cache = (String) SERIALIZE_COMPONENT.invoke(null, handle);
 		}
 		return cache;
- 	}
-	
+	}
+
 	/**
 	 * Set the content of this component using a JSON object.
+	 *
 	 * @param obj - the JSON that represents the new component.
 	 */
 	public void setJson(String obj) {
@@ -159,6 +167,7 @@ public class WrappedChatComponent extends AbstractWrapper implements ClonableWra
 
 	/**
 	 * Retrieve a deep copy of the current chat component.
+	 *
 	 * @return A copy of the current component.
 	 */
 	public WrappedChatComponent deepClone() {

@@ -8,8 +8,8 @@ import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.reflect.fuzzy.FuzzyMethodContract;
 import com.comphenix.protocol.utility.MinecraftReflection;
-
 import com.comphenix.protocol.utility.MinecraftVersion;
+
 import com.mojang.math.Vector3fa;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -30,29 +30,29 @@ public class WrappedParticle<T> {
 
 		FuzzyReflection fuzzy = FuzzyReflection.fromClass(MinecraftReflection.getCraftBukkitClass("CraftParticle"));
 		FuzzyMethodContract contract = FuzzyMethodContract
-				.newBuilder()
-				.requireModifier(Modifier.STATIC)
-				.returnTypeExact(Particle.class)
-				.parameterExactType(MinecraftReflection.getParticleParam())
-				.build();
+			.newBuilder()
+			.requireModifier(Modifier.STATIC)
+			.returnTypeExact(Particle.class)
+			.parameterExactType(MinecraftReflection.getParticleParam())
+			.build();
 		toBukkit = Accessors.getMethodAccessor(fuzzy.getMethod(contract));
 
 		contract = FuzzyMethodContract
-				.newBuilder()
-				.requireModifier(Modifier.STATIC)
-				.returnTypeExact(MinecraftReflection.getParticleParam())
-				.parameterCount(2)
-				.build();
+			.newBuilder()
+			.requireModifier(Modifier.STATIC)
+			.returnTypeExact(MinecraftReflection.getParticleParam())
+			.parameterCount(2)
+			.build();
 		toNMS = Accessors.getMethodAccessor(fuzzy.getMethod(contract));
 
 		Class<?> cbData = MinecraftReflection.getCraftBukkitClass("block.data.CraftBlockData");
 		fuzzy = FuzzyReflection.fromClass(cbData);
 		contract = FuzzyMethodContract
-				.newBuilder()
-				.requireModifier(Modifier.STATIC)
-				.returnTypeExact(cbData)
-				.parameterExactArray(MinecraftReflection.getIBlockDataClass())
-				.build();
+			.newBuilder()
+			.requireModifier(Modifier.STATIC)
+			.returnTypeExact(cbData)
+			.parameterExactArray(MinecraftReflection.getIBlockDataClass())
+			.build();
 		toCraftData = Accessors.getMethodAccessor(fuzzy.getMethod(contract));
 	}
 
@@ -119,16 +119,16 @@ public class WrappedParticle<T> {
 
 	private static WrappedBlockData getBlockData(Object handle) {
 		return new StructureModifier<>(handle.getClass())
-				.withTarget(handle)
-				.withType(MinecraftReflection.getIBlockDataClass(), BukkitConverters.getWrappedBlockDataConverter())
-				.read(0);
+			.withTarget(handle)
+			.withType(MinecraftReflection.getIBlockDataClass(), BukkitConverters.getWrappedBlockDataConverter())
+			.read(0);
 	}
 
 	private static Object getItem(Object handle) {
 		return new StructureModifier<>(handle.getClass())
-				.withTarget(handle)
-				.withType(MinecraftReflection.getItemStackClass(), BukkitConverters.getItemStackConverter())
-				.read(0);
+			.withTarget(handle)
+			.withType(MinecraftReflection.getItemStackClass(), BukkitConverters.getItemStackConverter())
+			.read(0);
 	}
 
 	private static Object getRedstone(Object handle) {

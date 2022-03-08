@@ -1,28 +1,21 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2017 Dan Mulloy
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2017 Dan Mulloy
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.wrappers;
 
-import com.comphenix.protocol.reflect.accessors.Accessors;
-import com.comphenix.protocol.reflect.accessors.ConstructorAccessor;
-import com.comphenix.protocol.reflect.accessors.FieldAccessor;
-import com.comphenix.protocol.reflect.instances.DefaultInstances;
-import com.google.common.base.Defaults;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,7 +23,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.comphenix.protocol.reflect.EquivalentConverter;
+import com.comphenix.protocol.reflect.accessors.Accessors;
+import com.comphenix.protocol.reflect.accessors.ConstructorAccessor;
+import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
+
+import com.google.common.base.Defaults;
 
 /**
  * Automatically wraps an internal NMS class to a non-versioned, deofbuscated class.
@@ -135,17 +133,17 @@ public class AutoWrapper<T> implements EquivalentConverter<T> {
 	private void computeFieldAccessors() {
 		if (nmsAccessors == null) {
 			nmsAccessors = Arrays
-					.stream(nmsClass.getDeclaredFields())
-					.filter(field -> !Modifier.isStatic(field.getModifiers()))
-					.map(field -> Accessors.getFieldAccessor(field, true))
-					.toArray(FieldAccessor[]::new);
+				.stream(nmsClass.getDeclaredFields())
+				.filter(field -> !Modifier.isStatic(field.getModifiers()))
+				.map(field -> Accessors.getFieldAccessor(field, true))
+				.toArray(FieldAccessor[]::new);
 		}
 
 		if (wrapperAccessors == null) {
 			wrapperAccessors = Arrays
-					.stream(wrapperClass.getDeclaredFields())
-					.map(field -> Accessors.getFieldAccessor(field, true))
-					.toArray(FieldAccessor[]::new);
+				.stream(wrapperClass.getDeclaredFields())
+				.map(field -> Accessors.getFieldAccessor(field, true))
+				.toArray(FieldAccessor[]::new);
 		}
 	}
 
@@ -160,9 +158,9 @@ public class AutoWrapper<T> implements EquivalentConverter<T> {
 				// use the first constructor of the class
 				nmsInstanceCreator = Accessors.getConstructorAccessor(nmsClass.getDeclaredConstructors()[0]);
 				nmsDefaultArgs = Arrays
-						.stream(nmsInstanceCreator.getConstructor().getParameterTypes())
-						.map(type -> type.isPrimitive() ? Defaults.defaultValue(type) : null)
-						.toArray(Object[]::new);
+					.stream(nmsInstanceCreator.getConstructor().getParameterTypes())
+					.map(type -> type.isPrimitive() ? Defaults.defaultValue(type) : null)
+					.toArray(Object[]::new);
 			}
 		}
 	}

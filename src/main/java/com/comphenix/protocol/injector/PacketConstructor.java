@@ -20,7 +20,6 @@ package com.comphenix.protocol.injector;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Optional;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.error.RethrowErrorReporter;
@@ -28,14 +27,15 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.injector.packet.PacketRegistry;
 import com.comphenix.protocol.reflect.FieldAccessException;
 import com.comphenix.protocol.wrappers.BukkitConverters;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Primitives;
 
 /**
  * A packet constructor that uses an internal Minecraft.
- * @author Kristian
  *
+ * @author Kristian
  */
 public class PacketConstructor {
 	/**
@@ -44,57 +44,60 @@ public class PacketConstructor {
 	 * Remember to call withPacket().
 	 */
 	public static PacketConstructor DEFAULT = new PacketConstructor(null);
-	
+
 	// The constructor method that's actually responsible for creating the packet
 	private Constructor<?> constructorMethod;
-	
+
 	// The packet ID
 	private PacketType type;
-	
+
 	// Used to unwrap Bukkit objects
 	private List<Unwrapper> unwrappers;
-	
+
 	// Parameters that need to be unwrapped
 	private Unwrapper[] paramUnwrapper;
-	
+
 	private PacketConstructor(Constructor<?> constructorMethod) {
 		this.constructorMethod = constructorMethod;
-		this.unwrappers = Lists.newArrayList((Unwrapper) new BukkitUnwrapper(new RethrowErrorReporter() ));
+		this.unwrappers = Lists.newArrayList((Unwrapper) new BukkitUnwrapper(new RethrowErrorReporter()));
 		this.unwrappers.addAll(BukkitConverters.getUnwrappers());
 	}
-	
+
 	private PacketConstructor(PacketType type, Constructor<?> constructorMethod, List<Unwrapper> unwrappers, Unwrapper[] paramUnwrapper) {
 		this.type = type;
 		this.constructorMethod = constructorMethod;
 		this.unwrappers = unwrappers;
 		this.paramUnwrapper = paramUnwrapper;
 	}
-	
+
 	public ImmutableList<Unwrapper> getUnwrappers() {
 		return ImmutableList.copyOf(unwrappers);
 	}
-	
+
 	/**
 	 * Retrieve the id of the packets this constructor creates.
 	 * <p>
 	 * Deprecated: Use {@link #getType()} instead.
+	 *
 	 * @return The ID of the packets this constructor will create.
 	 */
 	@Deprecated
 	public int getPacketID() {
 		return type.getCurrentId();
 	}
-	
+
 	/**
 	 * Retrieve the type of the packets this constructor creates.
+	 *
 	 * @return The type of the created packets.
 	 */
 	public PacketType getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Return a copy of the current constructor with a different list of unwrappers.
+	 *
 	 * @param unwrappers - list of unwrappers that convert Bukkit wrappers into the equivalent NMS classes.
 	 * @return A constructor with a different set of unwrappers.
 	 */
@@ -106,6 +109,7 @@ public class PacketConstructor {
 	 * Create a packet constructor that creates packets using the given types.
 	 * <p>
 	 * Note that if you pass a Class as a value, it will use its type directly.
+	 *
 	 * @param type - the type of the packet to create.
 	 * @param values - the values that will match each parameter in the desired constructor.
 	 * @return A packet constructor with these types.
@@ -115,15 +119,15 @@ public class PacketConstructor {
 		Class<?>[] types = new Class<?>[values.length];
 		Throwable lastException = null;
 		Unwrapper[] paramUnwrapper = new Unwrapper[values.length];
-		
+
 		for (int i = 0; i < types.length; i++) {
 			// Default type
 			if (values[i] != null) {
 				types[i] = PacketConstructor.getClass(values[i]);
-				
+
 				for (Unwrapper unwrapper : unwrappers) {
 					Object result = null;
-					
+
 					try {
 						result = unwrapper.unwrapItem(values[i]);
 					} catch (OutOfMemoryError e) {
@@ -133,7 +137,7 @@ public class PacketConstructor {
 					} catch (Throwable e) {
 						lastException = e;
 					}
-					
+
 					// Update type we're searching for
 					if (result != null) {
 						types[i] = PacketConstructor.getClass(result);
@@ -141,7 +145,7 @@ public class PacketConstructor {
 						break;
 					}
 				}
-			
+
 			} else {
 				// Try it
 				types[i] = Object.class;
@@ -161,9 +165,10 @@ public class PacketConstructor {
 		}
 		throw new IllegalArgumentException("No suitable constructor could be found.", lastException);
 	}
-	
+
 	/**
 	 * Construct a packet using the special builtin Minecraft constructors.
+	 *
 	 * @param values - values containing Bukkit wrapped items to pass to Minecraft.
 	 * @return The created packet.
 	 * @throws FieldAccessException Failure due to a security limitation.
@@ -178,10 +183,10 @@ public class PacketConstructor {
 					values[i] = paramUnwrapper[i].unwrapItem(values[i]);
 				}
 			}
-			
+
 			Object nmsPacket = constructorMethod.newInstance(values);
 			return new PacketContainer(type, nmsPacket);
-			
+
 		} catch (IllegalArgumentException e) {
 			throw e;
 		} catch (InstantiationException e) {
@@ -192,37 +197,38 @@ public class PacketConstructor {
 			throw new RuntimeException("Minecraft error.", e);
 		}
 	}
-	
+
 	// Determine if a method with the types 'params' can be called with 'types'
 	private static boolean isCompatible(Class<?>[] types, Class<?>[] params) {
-		
+
 		// Determine if the types are similar
 		if (params.length == types.length) {
 			for (int i = 0; i < params.length; i++) {
 				Class<?> inputType = types[i];
 				Class<?> paramType = params[i];
-				
+
 				// The input type is always wrapped
 				if (!inputType.isPrimitive() && paramType.isPrimitive()) {
 					// Wrap it
 					paramType = Primitives.wrap(paramType);
 				}
-				
+
 				// Compare assignability
 				if (!paramType.isAssignableFrom(inputType)) {
 					return false;
 				}
 			}
-			
+
 			return true;
 		}
-		
+
 		// Parameter count must match
 		return false;
 	}
-	
+
 	/**
 	 * Retrieve the class of an object, or just the class if it already is a class object.
+	 *
 	 * @param obj - the object.
 	 * @return The class of an object.
 	 */
@@ -234,7 +240,7 @@ public class PacketConstructor {
 
 	/**
 	 * Represents a unwrapper for a constructor parameter.
-	 * 
+	 *
 	 * @author Kristian
 	 */
 	public static interface Unwrapper {
@@ -243,6 +249,7 @@ public class PacketConstructor {
 		 * <p>
 		 * Note that we may pass in a class instead of object - in that case, the unwrapper should
 		 * return the equivalent NMS class.
+		 *
 		 * @param wrappedObject - wrapped object or class.
 		 * @return The equivalent net.minecraft.server object or class.
 		 */

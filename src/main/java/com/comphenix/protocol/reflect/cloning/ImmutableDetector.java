@@ -2,16 +2,16 @@
  *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
  *  Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the 
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of 
+ *  This program is free software; you can redistribute it and/or modify it under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation; either version 2 of
  *  the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *  See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program; 
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
+ *  You should have received a copy of the GNU General Public License along with this program;
+ *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307 USA
  */
 
@@ -29,11 +29,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
-
 import javax.crypto.SecretKey;
 
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
@@ -42,17 +42,17 @@ import com.google.common.primitives.Primitives;
  * Detects classes that are immutable, and thus doesn't require cloning.
  * <p>
  * This ought to have no false positives, but plenty of false negatives.
- * 
+ *
  * @author Kristian
  */
 public class ImmutableDetector implements Cloner {
 	// Notable immutable classes we might encounter
 	private static final Set<Class<?>> immutableClasses = ImmutableSet.of(
-			StackTraceElement.class, BigDecimal.class,
-			BigInteger.class, Locale.class, UUID.class,
-			URL.class, URI.class, Inet4Address.class,
-			Inet6Address.class, InetSocketAddress.class,
-			SecretKey.class, PublicKey.class
+		StackTraceElement.class, BigDecimal.class,
+		BigInteger.class, Locale.class, UUID.class,
+		URL.class, URI.class, Inet4Address.class,
+		Inet6Address.class, InetSocketAddress.class,
+		SecretKey.class, PublicKey.class
 	);
 
 	private static final Set<Class<?>> immutableNMS = Sets.newConcurrentHashSet();
@@ -94,7 +94,8 @@ public class ImmutableDetector implements Cloner {
 			if (clazz != null) {
 				immutableNMS.add(clazz);
 			}
-		} catch (RuntimeException ignored) { }
+		} catch (RuntimeException ignored) {
+		}
 	}
 
 	private static void add(String className, String... aliases) {
@@ -103,19 +104,20 @@ public class ImmutableDetector implements Cloner {
 			immutableNMS.add(clazz);
 		}
 	}
-	
+
 	@Override
 	public boolean canClone(Object source) {
 		// Don't accept NULL
 		if (source == null) {
 			return false;
 		}
-		
+
 		return isImmutable(source.getClass());
 	}
-	
+
 	/**
 	 * Determine if the given type is probably immutable.
+	 *
 	 * @param type - the type to check.
 	 * @return TRUE if the type is immutable, FALSE otherwise.
 	 */
@@ -124,7 +126,7 @@ public class ImmutableDetector implements Cloner {
 		if (type.isArray()) {
 			return false;
 		}
-		
+
 		// All primitive types
 		if (Primitives.isWrapperType(type) || String.class.equals(type)) {
 			return true;
@@ -153,7 +155,7 @@ public class ImmutableDetector implements Cloner {
 		// Probably not
 		return false;
 	}
-	
+
 	// This is just great. Just great.
 	private static boolean isEnumWorkaround(Class<?> enumClass) {
 		while (enumClass != null) {
@@ -166,7 +168,7 @@ public class ImmutableDetector implements Cloner {
 
 		return false;
 	}
-	
+
 	@Override
 	public Object clone(Object source) {
 		// Safe if the class is immutable

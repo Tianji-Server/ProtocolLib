@@ -19,17 +19,17 @@ package com.comphenix.protocol;
 
 import java.util.Set;
 
-import org.bukkit.plugin.Plugin;
-
 import com.comphenix.protocol.async.AsyncListenerHandler;
 import com.comphenix.protocol.async.AsyncMarker;
 import com.comphenix.protocol.error.ErrorReporter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 
+import org.bukkit.plugin.Plugin;
+
 /**
  * Represents a asynchronous packet handler.
- * 
+ *
  * @author Kristian
  */
 public interface AsynchronousManager {
@@ -39,6 +39,7 @@ public interface AsynchronousManager {
 	 * Use {@link AsyncMarker#incrementProcessingDelay()} to delay a packet until its ready to be transmitted.
 	 * <p>
 	 * To start listening asynchronously, pass the getListenerLoop() runnable to a different thread.
+	 *
 	 * @param listener - the packet listener that will receive these asynchronous events.
 	 * @return An asynchronous handler.
 	 */
@@ -46,18 +47,21 @@ public interface AsynchronousManager {
 
 	/**
 	 * Unregisters and closes the given asynchronous handler.
+	 *
 	 * @param handler - asynchronous handler.
 	 */
 	void unregisterAsyncHandler(AsyncListenerHandler handler);
 
 	/**
 	 * Unregisters and closes the first asynchronous handler associated with the given listener.
+	 *
 	 * @param listener - asynchronous listener
 	 */
 	void unregisterAsyncHandler(PacketListener listener);
-	
+
 	/**
 	 * Unregisters every asynchronous handler associated with this plugin.
+	 *
 	 * @param plugin - the original plugin.
 	 */
 	void unregisterAsyncHandlers(Plugin plugin);
@@ -65,6 +69,7 @@ public interface AsynchronousManager {
 	/**
 	 * Retrieves a immutable set containing the types of the sent server packets that will be
 	 * observed by the asynchronous listeners.
+	 *
 	 * @return Every filtered server packet.
 	 */
 	Set<PacketType> getSendingTypes();
@@ -72,12 +77,14 @@ public interface AsynchronousManager {
 	/**
 	 * Retrieves a immutable set containing the types of the received client packets that will be
 	 * observed by the asynchronous listeners.
+	 *
 	 * @return Every filtered client packet.
 	 */
 	Set<PacketType> getReceivingTypes();
 
 	/**
 	 * Determine if a given synchronous packet has asynchronous listeners.
+	 *
 	 * @param packet - packet to test.
 	 * @return TRUE if it does, FALSE otherwise.
 	 */
@@ -85,12 +92,14 @@ public interface AsynchronousManager {
 
 	/**
 	 * Retrieve the default packet stream.
+	 *
 	 * @return Default packet stream.
 	 */
 	PacketStream getPacketStream();
 
 	/**
 	 * Retrieve the default error reporter.
+	 *
 	 * @return Default reporter.
 	 */
 	ErrorReporter getErrorReporter();
@@ -105,30 +114,35 @@ public interface AsynchronousManager {
 	 * <p>
 	 * This should only be called if {@link com.comphenix.protocol.async.AsyncMarker#incrementProcessingDelay() AsyncMarker.incrementProcessingDelay()}
 	 * has been called previously.
+	 *
 	 * @param packet - packet to signal.
 	 */
 	void signalPacketTransmission(PacketEvent packet);
 
 	/**
 	 * Register a synchronous listener that handles packets when they time out.
+	 *
 	 * @param listener - synchronous listener that will handle timed out packets.
 	 */
 	void registerTimeoutHandler(PacketListener listener);
-	
+
 	/**
 	 * Unregisters a given timeout listener.
+	 *
 	 * @param listener - the timeout listener to unregister.
 	 */
 	void unregisterTimeoutHandler(PacketListener listener);
 
 	/**
 	 * Get a immutable set of every registered timeout handler.
+	 *
 	 * @return Set of every registered timeout handler.
 	 */
 	Set<PacketListener> getTimeoutHandlers();
 
 	/**
 	 * Get an immutable set of every registered asynchronous packet listener.
+	 *
 	 * @return Set of every asynchronous packet listener.
 	 */
 	Set<PacketListener> getAsyncHandlers();

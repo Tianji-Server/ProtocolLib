@@ -23,18 +23,18 @@ package com.comphenix.protocol.utility;
 
 import java.lang.reflect.Method;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
-
 import com.comphenix.protocol.reflect.FieldUtils;
 import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.utility.RemappedClassSource.RemapperUnavailableException.Reason;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Server;
 
 class RemappedClassSource extends ClassSource {
 	private Object classRemapper;
 	private Method mapType;
 	private ClassLoader loader;
-	
+
 	/**
 	 * Construct a new remapped class source using the default class loader.
 	 */
@@ -44,14 +44,16 @@ class RemappedClassSource extends ClassSource {
 
 	/**
 	 * Construct a new renampped class source with the provided class loader.
+	 *
 	 * @param loader - the class loader.
 	 */
 	public RemappedClassSource(ClassLoader loader) {
 		this.loader = loader;
 	}
-	
+
 	/**
 	 * Attempt to load the MCPC remapper.
+	 *
 	 * @return TRUE if we succeeded, FALSE otherwise.
 	 * @throws RemapperUnavailableException If the remapper is not present.
 	 */
@@ -69,19 +71,19 @@ class RemappedClassSource extends ClassSource {
 
 			// Obtain the Class remapper used by MCPC+/Cauldron
 			this.classRemapper = FieldUtils.readField(getClass().getClassLoader(), "remapper", true);
-			
+
 			if (this.classRemapper == null) {
 				throw new RemapperUnavailableException(Reason.REMAPPER_DISABLED);
 			}
-			
+
 			// Initialize some fields and methods used by the Jar Remapper
 			Class<?> renamerClazz = classRemapper.getClass();
-	
-			this.mapType = MethodUtils.getAccessibleMethod(renamerClazz, "map", 
+
+			this.mapType = MethodUtils.getAccessibleMethod(renamerClazz, "map",
 				new Class<?>[] { String.class });
-			
+
 			return this;
-			
+
 		} catch (RemapperUnavailableException e) {
 			throw e;
 		} catch (Exception e) {
@@ -93,16 +95,17 @@ class RemappedClassSource extends ClassSource {
 	@Override
 	public Class<?> loadClass(String canonicalName) throws ClassNotFoundException {
 		final String remapped = getClassName(canonicalName);
-		
+
 		try {
 			return loader.loadClass(remapped);
 		} catch (ClassNotFoundException e) {
-			throw new ClassNotFoundException("Cannot find " + canonicalName + "(Remapped: " + remapped + ")"); 
+			throw new ClassNotFoundException("Cannot find " + canonicalName + "(Remapped: " + remapped + ")");
 		}
 	}
-	
+
 	/**
 	 * Retrieve the obfuscated class name given an unobfuscated canonical class name.
+	 *
 	 * @param path - the canonical class name.
 	 * @return The obfuscated class name.
 	 */
@@ -121,31 +124,33 @@ class RemappedClassSource extends ClassSource {
 		public enum Reason {
 			MCPC_NOT_PRESENT("The server is not running MCPC+/Cauldron"),
 			REMAPPER_DISABLED("Running an MCPC+/Cauldron server but the remapper is unavailable. Please turn it on!");
-			
+
 			private final String message;
-			
+
 			private Reason(String message) {
 				this.message = message;
 			}
-			
+
 			/**
 			 * Retrieve a human-readable version of this reason.
+			 *
 			 * @return The human-readable verison.
 			 */
 			public String getMessage() {
 				return message;
 			}
 		}
-		
+
 		private final Reason reason;
-		
+
 		public RemapperUnavailableException(Reason reason) {
 			super(reason.getMessage());
 			this.reason = reason;
 		}
-		
+
 		/**
 		 * Retrieve the reasont he remapper is unavailable.
+		 *
 		 * @return The reason.
 		 */
 		public Reason getReason() {

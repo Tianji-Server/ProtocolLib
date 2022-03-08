@@ -22,30 +22,32 @@ import java.lang.reflect.Field;
 import com.comphenix.protocol.ProtocolLogger;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.FieldAccessor;
+
 import com.google.common.base.Objects;
 
 /**
  * Represents a field that will revert to its original state when this class is garbaged collected.
- * 
+ *
  * @author Kristian
  */
 public class VolatileField {
 	private FieldAccessor accessor;
 	private Object container;
-	
+
 	// The current and previous values
 	private Object previous;
 	private Object current;
-	
+
 	// Whether or not we must reset or load
 	private boolean previousLoaded;
 	private boolean currentSet;
 
 	// Whether or not to break access restrictions
 	private boolean forceAccess;
-	
+
 	/**
 	 * Initializes a volatile field with an associated object.
+	 *
 	 * @param field - the field.
 	 * @param container - the object this field belongs to.
 	 */
@@ -53,9 +55,10 @@ public class VolatileField {
 		this.accessor = Accessors.getFieldAccessor(field);
 		this.container = container;
 	}
-	
+
 	/**
 	 * Initializes a volatile field with an associated object.
+	 *
 	 * @param field - the field.
 	 * @param container - the object this field belongs to.
 	 * @param forceAccess - whether or not to override any scope restrictions.
@@ -65,9 +68,10 @@ public class VolatileField {
 		this.container = container;
 		this.forceAccess = forceAccess;
 	}
-	
+
 	/**
 	 * Initializes a volatile field with the given accessor and associated object.
+	 *
 	 * @param accessor - the field accessor.
 	 * @param container - the object this field belongs to.
 	 */
@@ -75,25 +79,28 @@ public class VolatileField {
 		this.accessor = accessor;
 		this.container = container;
 	}
-	
+
 	/**
 	 * Retrieves the current field.
+	 *
 	 * @return The stored field.
 	 */
 	public Field getField() {
 		return accessor.getField();
 	}
-	
+
 	/**
 	 * Retrieves the object the field is stored.
+	 *
 	 * @return The reference object.
 	 */
 	public Object getContainer() {
 		return container;
 	}
-	
+
 	/**
 	 * Retrieves whether or not not to override any scope restrictions.
+	 *
 	 * @return TRUE if we override scope, FALSE otherwise.
 	 */
 	public boolean isForceAccess() {
@@ -102,6 +109,7 @@ public class VolatileField {
 
 	/**
 	 * Sets whether or not not to override any scope restrictions.
+	 *
 	 * @param forceAccess - TRUE if we override scope, FALSE otherwise.
 	 */
 	public void setForceAccess(boolean forceAccess) {
@@ -110,6 +118,7 @@ public class VolatileField {
 
 	/**
 	 * Retrieves the current field value.
+	 *
 	 * @return The current field value.
 	 */
 	public Object getValue() {
@@ -121,29 +130,31 @@ public class VolatileField {
 			return current;
 		}
 	}
-	
+
 	/**
 	 * Retrieves the field value before the previous setValue(), unless saveValue() has been called.
+	 *
 	 * @return Previous value.
 	 */
 	public Object getOldValue() {
 		ensureLoaded();
 		return previous;
 	}
-	
+
 	/**
 	 * Sets the current value. This will be reverted unless saveValue() is called.
+	 *
 	 * @param newValue - new field value.
 	 */
 	public void setValue(Object newValue) {
 		// Remember to safe the previous value
 		ensureLoaded();
-		
+
 		writeFieldValue(newValue);
 		current = newValue;
 		currentSet = true;
 	}
-	
+
 	/**
 	 * Reapply the current changed value.
 	 * <p>
@@ -151,7 +162,7 @@ public class VolatileField {
 	 */
 	public void refreshValue() {
 		Object fieldValue = readFieldValue();
-		
+
 		if (currentSet) {
 			// If they differ, we need to set them again
 			if (!Objects.equal(current, fieldValue)) {
@@ -164,7 +175,7 @@ public class VolatileField {
 			previous = fieldValue;
 		}
 	}
-	
+
 	/**
 	 * Ensure that the current value is still set after this class has been garbaged collected.
 	 */
@@ -172,7 +183,7 @@ public class VolatileField {
 		previous = current;
 		currentSet = false;
 	}
-	
+
 	/**
 	 * Revert to the previously set value.
 	 */
@@ -188,23 +199,25 @@ public class VolatileField {
 			}
 		}
 	}
-	
+
 	/**
 	 * Retrieve a synchronized version of the current field.
+	 *
 	 * @return A synchronized volatile field.
 	 */
 	public VolatileField toSynchronized() {
 		return new VolatileField(Accessors.getSynchronized(accessor), container);
 	}
-	
+
 	/**
 	 * Determine whether or not we'll need to revert the value.
+	 *
 	 * @return True if it is set, false if not.
 	 */
 	public boolean isCurrentSet() {
 		return currentSet;
 	}
-	
+
 	private void ensureLoaded() {
 		// Load the value if we haven't already
 		if (!previousLoaded) {
@@ -212,23 +225,25 @@ public class VolatileField {
 			previousLoaded = true;
 		}
 	}
-	
+
 	/**
 	 * Read the content of the underlying field.
+	 *
 	 * @return The field value.
 	 */
 	private Object readFieldValue() {
 		return accessor.get(container);
 	}
-	
+
 	/**
 	 * Write the given value to the underlying field.
+	 *
 	 * @param newValue - the new value.
 	 */
 	private void writeFieldValue(Object newValue) {
 		accessor.set(container, newValue);
 	}
-		
+
 	@Override
 	protected void finalize() throws Throwable {
 		revertValue();
@@ -237,7 +252,7 @@ public class VolatileField {
 	@Override
 	public String toString() {
 		return "VolatileField [accessor=" + accessor + ", container=" + container + ", previous="
-				+ previous + ", current=" + current + ", previousLoaded=" + previousLoaded
-				+ ", currentSet=" + currentSet + ", forceAccess=" + forceAccess + "]";
+			+ previous + ", current=" + current + ", previousLoaded=" + previousLoaded
+			+ ", currentSet=" + currentSet + ", forceAccess=" + forceAccess + "]";
 	}
 }

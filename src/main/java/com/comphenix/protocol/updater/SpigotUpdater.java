@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.updater;
 
@@ -22,12 +22,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.bukkit.plugin.Plugin;
-
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.error.Report;
 import com.comphenix.protocol.utility.Closer;
-import com.google.common.base.Charsets;
+
+import org.bukkit.plugin.Plugin;
 
 /**
  * Adapted version of the Bukkit updater for use with Spigot resources
@@ -43,11 +42,11 @@ public final class SpigotUpdater extends Updater {
 
 	@Override
 	public void start(UpdateType type) {
-    	waitForThread();
-  
-    	this.type = type;
-        this.thread = new Thread(new SpigotUpdateRunnable());
-        this.thread.start();
+		waitForThread();
+
+		this.type = type;
+		this.thread = new Thread(new SpigotUpdateRunnable());
+		this.thread.start();
 	}
 
 	@Override
@@ -72,7 +71,7 @@ public final class SpigotUpdater extends Updater {
 			} catch (Throwable ex) {
 				if (ProtocolLibrary.getConfig().isDebug()) {
 					ProtocolLibrary.getErrorReporter().reportDetailed(
-							SpigotUpdater.this, Report.newBuilder(REPORT_CANNOT_UPDATE_PLUGIN).error(ex).callerParam(this));
+						SpigotUpdater.this, Report.newBuilder(REPORT_CANNOT_UPDATE_PLUGIN).error(ex).callerParam(this));
 				} else {
 					// People don't care
 					// plugin.getLogger().log(Level.WARNING, "Failed to check for updates: " + ex);

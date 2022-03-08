@@ -17,7 +17,11 @@
 package com.comphenix.protocol.wrappers;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,7 +63,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -81,7 +84,7 @@ import static com.comphenix.protocol.wrappers.Converters.ignoreNull;
 
 /**
  * Contains several useful equivalent converters for normal Bukkit types.
- * 
+ *
  * @author Kristian
  */
 @SuppressWarnings("unchecked")
@@ -89,11 +92,11 @@ public class BukkitConverters {
 	// Check whether or not certain classes exists
 	private static boolean hasWorldType = false;
 	private static boolean hasAttributeSnapshot = false;
-	
+
 	// The static maps
 	private static Map<Class<?>, EquivalentConverter<Object>> genericConverters;
 	private static List<Unwrapper> unwrappers;
-	
+
 	// Used to access the world type
 	private static Method worldTypeName;
 	private static Method worldTypeGetType;
@@ -101,23 +104,23 @@ public class BukkitConverters {
 	// Used for potion effect conversion
 	private static volatile Constructor<?> mobEffectConstructor;
 	private static volatile StructureModifier<Object> mobEffectModifier;
-	
+
 	// Used for fetching the CraftWorld associated with a WorldServer
 	private static FieldAccessor craftWorldField;
-	
+
 	static {
 		try {
 			MinecraftReflection.getWorldTypeClass();
 			hasWorldType = true;
 		} catch (Exception e) {
 		}
-		
+
 		try {
 			MinecraftReflection.getAttributeSnapshotClass();
 			hasAttributeSnapshot = true;
 		} catch (Exception e) {
 		}
-		
+
 		// Fetch CraftWorld field
 		try {
 			craftWorldField = Accessors.getFieldAccessor(
@@ -127,12 +130,12 @@ public class BukkitConverters {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Represents a typical equivalence converter.
-	 * 
-	 * @author Kristian
+	 *
 	 * @param <TType> - type that can be converted.
+	 * @author Kristian
 	 * @deprecated Replaced by {@link Converters#ignoreNull(EquivalentConverter)}
 	 */
 	@Deprecated
@@ -144,14 +147,15 @@ public class BukkitConverters {
 			else
 				return null;
 		}
-		
+
 		/**
 		 * Retrieve a copy of the actual generic value.
+		 *
 		 * @param specific - the specific type-
 		 * @return A copy of the specific type.
 		 */
 		public abstract Object getGenericValue(TType specific);
-		
+
 		@Override
 		public final TType getSpecific(Object generic) {
 			if (generic != null)
@@ -159,14 +163,15 @@ public class BukkitConverters {
 			else
 				return null;
 		}
-		
+
 		/**
 		 * Retrieve a copy of the specific type using an instance of the generic type.
+		 *
 		 * @param generic - generic type.
 		 * @return A copy of the specific type.
 		 */
 		public abstract TType getSpecificValue(Object generic);
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) return true;
@@ -184,18 +189,19 @@ public class BukkitConverters {
 			return Objects.hashCode(this.getSpecificType());
 		}
 	}
-	
+
 	/**
 	 * Represents a converter that is only valid in a given world.
-	 * 
-	 * @author Kristian
+	 *
 	 * @param <TType> - instance types it converts.
+	 * @author Kristian
 	 */
 	private static abstract class WorldSpecificConverter<TType> implements EquivalentConverter<TType> {
 		protected World world;
 
 		/**
 		 * Initialize a new world-specificn converter.
+		 *
 		 * @param world - the given world.
 		 */
 		WorldSpecificConverter(World world) {
@@ -223,7 +229,7 @@ public class BukkitConverters {
 	}
 
 	public static <K, V> EquivalentConverter<Map<K, V>> getMapConverter(EquivalentConverter<K> keyConverter,
-	                                                                        EquivalentConverter<V> valConverter) {
+																		EquivalentConverter<V> valConverter) {
 		return new EquivalentConverter<Map<K, V>>() {
 			@Override
 			public Map<K, V> getSpecific(Object generic) {
@@ -350,6 +356,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve an equivalent converter for a list of generic items.
+	 *
 	 * @param <T> Type
 	 * @param itemConverter - an equivalent converter for the generic type.
 	 * @return An equivalent converter.
@@ -408,6 +415,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve an equivalent converter for a set of generic items.
+	 *
 	 * @param <T> Element type
 	 * @param itemConverter - an equivalent converter for the generic type.
 	 * @return An equivalent converter.
@@ -473,6 +481,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve an equivalent converter for an array of generic items.
+	 *
 	 * @param <T> Type
 	 * <p>
 	 * The array is wrapped in a list.
@@ -481,7 +490,7 @@ public class BukkitConverters {
 	 * @return An equivalent converter.
 	 */
 	public static <T> EquivalentConverter<Iterable<? extends T>> getArrayConverter(final Class<?> genericItemType,
-	                                                                               final EquivalentConverter<T> itemConverter) {
+																				   final EquivalentConverter<T> itemConverter) {
 		// Convert to and from the wrapper
 		return ignoreNull(new EquivalentConverter<Iterable<? extends T>>() {
 			@Override
@@ -522,41 +531,46 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve a converter for wrapped game profiles.
+	 *
 	 * @return Wrapped game profile converter.
 	 */
 	public static EquivalentConverter<WrappedGameProfile> getWrappedGameProfileConverter() {
 		return ignoreNull(handle(WrappedGameProfile::getHandle, WrappedGameProfile::fromHandle, WrappedGameProfile.class));
 	}
-	
+
 	/**
 	 * Retrieve a converter for wrapped chat components.
+	 *
 	 * @return Wrapped chat component.
 	 */
 	public static EquivalentConverter<WrappedChatComponent> getWrappedChatComponentConverter() {
 		return ignoreNull(handle(WrappedChatComponent::getHandle, WrappedChatComponent::fromHandle, WrappedChatComponent.class));
 	}
-	
+
 	/**
 	 * Retrieve a converter for wrapped block data.
+	 *
 	 * @return Wrapped block data.
 	 */
 	public static EquivalentConverter<WrappedBlockData> getWrappedBlockDataConverter() {
 		return ignoreNull(handle(WrappedBlockData::getHandle, WrappedBlockData::fromHandle, WrappedBlockData.class));
 	}
-	
+
 	/**
 	 * Retrieve a converter for wrapped attribute snapshots.
+	 *
 	 * @return Wrapped attribute snapshot converter.
 	 */
 	public static EquivalentConverter<WrappedAttribute> getWrappedAttributeConverter() {
 		return ignoreNull(handle(WrappedAttribute::getHandle, WrappedAttribute::fromHandle, WrappedAttribute.class));
 	}
-	
+
 	/**
 	 * Retrieve a converter for watchable objects and the respective wrapper.
+	 *
 	 * @return A watchable object converter.
 	 */
 	public static EquivalentConverter<WrappedWatchableObject> getWatchableObjectConverter() {
@@ -582,9 +596,10 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve a converter for the NMS DataWatcher class and our wrapper.
+	 *
 	 * @return A DataWatcher converter.
 	 */
 	public static EquivalentConverter<WrappedDataWatcher> getDataWatcherConverter() {
@@ -610,9 +625,10 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve a converter for Bukkit's world type enum and the NMS equivalent.
+	 *
 	 * @return A world type enum converter.
 	 */
 	public static EquivalentConverter<WorldType> getWorldTypeConverter() {
@@ -629,7 +645,7 @@ public class BukkitConverters {
 					// Deduce getType method by parameters alone
 					if (worldTypeGetType == null) {
 						worldTypeGetType = FuzzyReflection.fromClass(worldType).
-								getMethodByParameters("getType", worldType, new Class<?>[]{String.class});
+							getMethodByParameters("getType", worldType, new Class<?>[] { String.class });
 					}
 
 					// Convert to the Bukkit world type
@@ -649,7 +665,7 @@ public class BukkitConverters {
 						} catch (Exception e) {
 							// Assume the first method is the one
 							worldTypeName = FuzzyReflection.fromClass(worldType).
-									getMethodByParameters("name", String.class, new Class<?>[]{});
+								getMethodByParameters("name", String.class, new Class<?>[] {});
 						}
 					}
 
@@ -668,9 +684,10 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve an equivalent converter for net.minecraft.server NBT classes and their wrappers.
+	 *
 	 * @return An equivalent converter for NBT.
 	 */
 	public static EquivalentConverter<NbtBase<?>> getNbtConverter() {
@@ -694,9 +711,10 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve a converter for NMS entities and Bukkit entities.
+	 *
 	 * @param world - the current world.
 	 * @return A converter between the underlying NMS entity and Bukkit's wrapper.
 	 */
@@ -709,25 +727,25 @@ public class BukkitConverters {
 				// Simple enough
 				return specific.getEntityId();
 			}
-			
+
 			@Override
 			public Entity getSpecific(Object generic) {
 				try {
 					Integer id = (Integer) generic;
 					ProtocolManager manager = managerRef.get();
-					
+
 					// Use the entity ID to get a reference to the entity
 					if (id != null && id >= 0 && manager != null) {
 						return manager.getEntityFromID(world, id);
 					} else {
 						return null;
 					}
-					
+
 				} catch (FieldAccessException e) {
 					throw new RuntimeException("Cannot retrieve entity from ID.", e);
 				}
 			}
-			
+
 			@Override
 			public Class<Entity> getSpecificType() {
 				return Entity.class;
@@ -745,13 +763,13 @@ public class BukkitConverters {
 				if (entityTypeFromName == null) {
 					Class<?> entityTypesClass = MinecraftReflection.getEntityTypes();
 					entityTypeFromName = Accessors.getMethodAccessor(
-							FuzzyReflection
-									.fromClass(entityTypesClass, false)
-									.getMethod(FuzzyMethodContract
-											           .newBuilder()
-											           .returnDerivedOf(Optional.class)
-											           .parameterExactArray(new Class<?>[]{ String.class })
-											           .build()));
+						FuzzyReflection
+							.fromClass(entityTypesClass, false)
+							.getMethod(FuzzyMethodContract
+								.newBuilder()
+								.returnDerivedOf(Optional.class)
+								.parameterExactArray(new Class<?>[] { String.class })
+								.build()));
 				}
 
 				Optional<?> opt = (Optional<?>) entityTypeFromName.invoke(null, specific.getName());
@@ -763,13 +781,13 @@ public class BukkitConverters {
 				if (getEntityTypeName == null) {
 					Class<?> entityTypesClass = MinecraftReflection.getEntityTypes();
 					getEntityTypeName = Accessors.getMethodAccessor(
-							FuzzyReflection
-									.fromClass(entityTypesClass, false)
-									.getMethod(FuzzyMethodContract
-											           .newBuilder()
-											           .returnTypeExact(MinecraftReflection.getMinecraftKeyClass())
-											           .parameterExactArray(new Class<?>[]{ entityTypesClass })
-											           .build()));
+						FuzzyReflection
+							.fromClass(entityTypesClass, false)
+							.getMethod(FuzzyMethodContract
+								.newBuilder()
+								.returnTypeExact(MinecraftReflection.getMinecraftKeyClass())
+								.parameterExactArray(new Class<?>[] { entityTypesClass })
+								.build()));
 				}
 
 				MinecraftKey key = MinecraftKey.fromHandle(getEntityTypeName.invoke(null, generic));
@@ -782,9 +800,10 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve the converter used to convert NMS ItemStacks to Bukkit's ItemStack.
+	 *
 	 * @return Item stack converter.
 	 */
 	public static EquivalentConverter<ItemStack> getItemStackConverter() {
@@ -808,14 +827,16 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve the converter for the ServerPing packet in {@link PacketType.Status.Server#SERVER_INFO}.
+	 *
 	 * @return Server ping converter.
 	 */
 	public static EquivalentConverter<WrappedServerPing> getWrappedServerPingConverter() {
 		return ignoreNull(handle(WrappedServerPing::getHandle, WrappedServerPing::fromHandle, WrappedServerPing.class));
 	}
-	
+
 	/**
 	 * Retrieve the converter for a statistic.
+	 *
 	 * @return Statistic converter.
 	 */
 	public static EquivalentConverter<WrappedStatistic> getWrappedStatisticConverter() {
@@ -827,6 +848,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve a converter for block instances.
+	 *
 	 * @return A converter for block instances.
 	 */
 	public static EquivalentConverter<Material> getBlockConverter() {
@@ -836,17 +858,17 @@ public class BukkitConverters {
 
 			FuzzyReflection fuzzy = FuzzyReflection.fromClass(magicNumbers);
 			FuzzyMethodContract.Builder builder = FuzzyMethodContract
-					.newBuilder()
-					.requireModifier(Modifier.STATIC)
-					.returnTypeExact(Material.class)
-					.parameterExactArray(block);
+				.newBuilder()
+				.requireModifier(Modifier.STATIC)
+				.returnTypeExact(Material.class)
+				.parameterExactArray(block);
 			MATERIAL_FROM_BLOCK = Accessors.getMethodAccessor(fuzzy.getMethod(builder.build()));
 
 			builder = FuzzyMethodContract
-					.newBuilder()
-					.requireModifier(Modifier.STATIC)
-					.returnTypeExact(block)
-					.parameterExactArray(Material.class);
+				.newBuilder()
+				.requireModifier(Modifier.STATIC)
+				.returnTypeExact(block)
+				.parameterExactArray(Material.class);
 			BLOCK_FROM_MATERIAL = Accessors.getMethodAccessor(fuzzy.getMethod(builder.build()));
 		}
 
@@ -870,6 +892,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve the converter used to convert between a NMS World and a Bukkit world.
+	 *
 	 * @return The world converter.
 	 */
 	public static EquivalentConverter<World> getWorldConverter() {
@@ -890,9 +913,10 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	/**
 	 * Retrieve the converter used to convert between a PotionEffect and the equivalent NMS Mobeffect.
+	 *
 	 * @return The potion effect converter.
 	 */
 	public static EquivalentConverter<PotionEffect> getPotionEffectConverter() {
@@ -903,7 +927,7 @@ public class BukkitConverters {
 				if (mobEffectConstructor == null) {
 					try {
 						mobEffectConstructor = MinecraftReflection.getMobEffectClass().
-								getConstructor(int.class, int.class, int.class, boolean.class);
+							getConstructor(int.class, int.class, int.class, boolean.class);
 					} catch (Exception e) {
 						throw new RuntimeException("Cannot find mob effect constructor (int, int, int, boolean).", e);
 					}
@@ -912,8 +936,8 @@ public class BukkitConverters {
 				// Create the generic value
 				try {
 					return mobEffectConstructor.newInstance(
-							specific.getType().getId(), specific.getDuration(),
-							specific.getAmplifier(), specific.isAmbient());
+						specific.getType().getId(), specific.getDuration(),
+						specific.getAmplifier(), specific.isAmbient());
 				} catch (Exception e) {
 					throw new RuntimeException("Cannot construct MobEffect.", e);
 				}
@@ -928,10 +952,10 @@ public class BukkitConverters {
 				StructureModifier<Boolean> bools = mobEffectModifier.withTarget(generic).withType(boolean.class);
 
 				return new PotionEffect(
-						PotionEffectType.getById(ints.read(0)), 	/* effectId */
-						ints.read(1),  							/* duration */
-						ints.read(2), 								/* amplification */
-						bools.read(1)								/* ambient */
+					PotionEffectType.getById(ints.read(0)),    /* effectId */
+					ints.read(1),                            /* duration */
+					ints.read(2),                                /* amplification */
+					bools.read(1)                                /* ambient */
 				);
 			}
 
@@ -947,6 +971,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve the converter used to convert between a Vector and the equivalent NMS Vec3d.
+	 *
 	 * @return The Vector converter.
 	 */
 	public static EquivalentConverter<Vector> getVectorConverter() {
@@ -962,7 +987,7 @@ public class BukkitConverters {
 				if (vec3dConstructor == null) {
 					try {
 						vec3dConstructor = MinecraftReflection.getVec3DClass().getConstructor(
-								double.class, double.class, double.class);
+							double.class, double.class, double.class);
 					} catch (Throwable ex) {
 						throw new RuntimeException("Could not find Vec3d constructor (double, double, double)");
 					}
@@ -983,9 +1008,9 @@ public class BukkitConverters {
 
 				StructureModifier<Double> doubles = vec3dModifier.withTarget(generic).withType(double.class);
 				return new Vector(
-						doubles.read(0), /* x */
-						doubles.read(1), /* y */
-						doubles.read(2)  /* z */
+					doubles.read(0), /* x */
+					doubles.read(1), /* y */
+					doubles.read(2)  /* z */
 				);
 			}
 
@@ -1010,21 +1035,21 @@ public class BukkitConverters {
 				FuzzyReflection fuzzy = FuzzyReflection.fromClass(craftSound, true);
 
 				getSoundEffectByKey = Accessors.getMethodAccessor(fuzzy.getMethodByParameters(
-						"getSoundEffect",
-						MinecraftReflection.getSoundEffectClass(),
-						new Class<?>[]{String.class}
+					"getSoundEffect",
+					MinecraftReflection.getSoundEffectClass(),
+					new Class<?>[] { String.class }
 				));
 
 				getSoundEffectBySound = Accessors.getMethodAccessor(fuzzy.getMethodByParameters(
-						"getSoundEffect",
-						MinecraftReflection.getSoundEffectClass(),
-						new Class<?>[]{Sound.class}
+					"getSoundEffect",
+					MinecraftReflection.getSoundEffectClass(),
+					new Class<?>[] { Sound.class }
 				));
 
 				getSoundByEffect = Accessors.getMethodAccessor(fuzzy.getMethodByParameters(
-						"getBukkit",
-						Sound.class,
-						new Class<?>[]{MinecraftReflection.getSoundEffectClass()}
+					"getBukkit",
+					Sound.class,
+					new Class<?>[] { MinecraftReflection.getSoundEffectClass() }
 				));
 			}
 
@@ -1053,9 +1078,9 @@ public class BukkitConverters {
 			Class<?> craftSound = MinecraftReflection.getCraftSoundClass();
 			FuzzyReflection fuzzy = FuzzyReflection.fromClass(craftSound, true);
 			getSound = Accessors.getMethodAccessor(
-					fuzzy.getMethodByParameters("getSound", String.class, new Class<?>[]{Sound.class}));
+				fuzzy.getMethodByParameters("getSound", String.class, new Class<?>[] { Sound.class }));
 			getSoundEffect = Accessors.getMethodAccessor(fuzzy.getMethodByParameters("getSoundEffect",
-					MinecraftReflection.getSoundEffectClass(), new Class<?>[]{String.class}));
+				MinecraftReflection.getSoundEffectClass(), new Class<?>[] { String.class }));
 		}
 
 		return ignoreNull(new EquivalentConverter<Sound>() {
@@ -1079,7 +1104,7 @@ public class BukkitConverters {
 					Class<?> soundEffect = generic.getClass();
 					FuzzyReflection fuzzy = FuzzyReflection.fromClass(soundEffect, true);
 					soundKey = Accessors.getFieldAccessor(
-							fuzzy.getFieldByType("key", MinecraftReflection.getMinecraftKeyClass()));
+						fuzzy.getFieldByType("key", MinecraftReflection.getMinecraftKeyClass()));
 				}
 
 				MinecraftKey minecraftKey = MinecraftKey.fromHandle(soundKey.get(generic));
@@ -1118,8 +1143,8 @@ public class BukkitConverters {
 			public Advancement getSpecific(Object generic) {
 				try {
 					return (Advancement) getCraftBukkitClass("advancement.CraftAdvancement")
-							.getConstructor(getMinecraftClass("advancements.Advancement", "Advancement"))
-							.newInstance(generic);
+						.getConstructor(getMinecraftClass("advancements.Advancement", "Advancement"))
+						.newInstance(generic);
 				} catch (ReflectiveOperationException ex) {
 					throw new RuntimeException(ex);
 				}
@@ -1139,6 +1164,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve an equivalent unwrapper for the converter.
+	 *
 	 * @param nativeType - the native NMS type the converter produces.
 	 * @param converter - the converter.
 	 * @return The equivalent unwrapper.
@@ -1160,6 +1186,7 @@ public class BukkitConverters {
 
 	/**
 	 * Retrieve every converter that is associated with a generic class.
+	 *
 	 * @return Every converter with a unique generic class.
 	 */
 	@SuppressWarnings("rawtypes")
@@ -1192,7 +1219,7 @@ public class BukkitConverters {
 	}
 
 	private static void addConverter(ImmutableMap.Builder<Class<?>, EquivalentConverter<Object>> builder,
-	                                 Supplier<Class<?>> getClass, Supplier<EquivalentConverter> getConverter) {
+									 Supplier<Class<?>> getClass, Supplier<EquivalentConverter> getConverter) {
 		try {
 			Class<?> clazz = getClass.get();
 			if (clazz != null) {
@@ -1205,15 +1232,16 @@ public class BukkitConverters {
 			ProtocolLogger.debug("Exception registering converter", ex);
 		}
 	}
-	
+
 	/**
 	 * Retrieve every NMS to/from Bukkit converter as unwrappers.
+	 *
 	 * @return Every unwrapper.
 	 */
 	public static List<Unwrapper> getUnwrappers() {
 		if (unwrappers == null) {
 			ImmutableList.Builder<Unwrapper> builder = ImmutableList.builder();
-			
+
 			for (Map.Entry<Class<?>, EquivalentConverter<Object>> entry : getConvertersForGeneric().entrySet()) {
 				builder.add(asUnwrapper(entry.getKey(), entry.getValue()));
 			}
@@ -1239,10 +1267,10 @@ public class BukkitConverters {
 				if (getMobEffect == null) {
 					FuzzyReflection fuzzy = FuzzyReflection.fromClass(clazz, false);
 					getMobEffect = Accessors.getMethodAccessor(fuzzy.getMethod(FuzzyMethodContract.newBuilder()
-							.parameterExactArray(int.class)
-							.returnTypeExact(clazz)
-							.requireModifier(Modifier.STATIC)
-							.build()));
+						.parameterExactArray(int.class)
+						.returnTypeExact(clazz)
+						.requireModifier(Modifier.STATIC)
+						.build()));
 				}
 
 				int id = specific.getId();
@@ -1255,10 +1283,10 @@ public class BukkitConverters {
 				if (getMobEffectId == null) {
 					FuzzyReflection fuzzy = FuzzyReflection.fromClass(clazz, false);
 					getMobEffectId = Accessors.getMethodAccessor(fuzzy.getMethod(FuzzyMethodContract.newBuilder()
-							.parameterExactArray(clazz)
-							.returnTypeExact(int.class)
-							.requireModifier(Modifier.STATIC)
-							.build()));
+						.parameterExactArray(clazz)
+						.returnTypeExact(int.class)
+						.requireModifier(Modifier.STATIC)
+						.build()));
 				}
 
 				int id = (int) getMobEffectId.invoke(null, generic);
@@ -1306,10 +1334,10 @@ public class BukkitConverters {
 				if (getWorldServer == null) {
 					FuzzyReflection fuzzy = FuzzyReflection.fromClass(server.getClass(), false);
 					getWorldServer = Accessors.getMethodAccessor(fuzzy.getMethod(FuzzyMethodContract
-							.newBuilder()
-							.parameterExactArray(generic.getClass())
-							.returnTypeExact(MinecraftReflection.getWorldServerClass())
-							.build()));
+						.newBuilder()
+						.parameterExactArray(generic.getClass())
+						.returnTypeExact(MinecraftReflection.getWorldServerClass())
+						.build()));
 				}
 
 				Object worldServer = getWorldServer.invoke(server, generic);
@@ -1333,16 +1361,21 @@ public class BukkitConverters {
 		THE_END_IMPL(1);
 
 		int id;
+
 		DimensionImpl(int id) {
 			this.id = id;
 		}
 
 		static DimensionImpl fromId(int id) {
 			switch (id) {
-				case 0: return OVERWORLD_IMPL;
-				case -1: return THE_NETHER_IMPL;
-				case 1: return THE_END_IMPL;
-				default: throw new IllegalArgumentException("Invalid dimension " + id);
+				case 0:
+					return OVERWORLD_IMPL;
+				case -1:
+					return THE_NETHER_IMPL;
+				case 1:
+					return THE_END_IMPL;
+				default:
+					throw new IllegalArgumentException("Invalid dimension " + id);
 			}
 		}
 	}
@@ -1378,10 +1411,10 @@ public class BukkitConverters {
 	private static MethodAccessor getWorldHandleAccessor() {
 		if (worldHandleAccessor == null) {
 			Method handleMethod = FuzzyReflection.fromClass(MinecraftReflection.getCraftWorldClass())
-					.getMethod(FuzzyMethodContract.newBuilder()
-							.nameExact("getHandle") // i guess this will never change
-							.returnTypeExact(MinecraftReflection.getWorldServerClass())
-							.build());
+				.getMethod(FuzzyMethodContract.newBuilder()
+					.nameExact("getHandle") // i guess this will never change
+					.returnTypeExact(MinecraftReflection.getWorldServerClass())
+					.build());
 			worldHandleAccessor = Accessors.getMethodAccessor(handleMethod);
 		}
 		return worldHandleAccessor;
@@ -1390,9 +1423,9 @@ public class BukkitConverters {
 	private static MethodAccessor getWorldHandleDimensionManagerAccessor() {
 		if (worldHandleDimensionManagerAccessor == null) {
 			Method dimensionGetter = FuzzyReflection.fromClass(MinecraftReflection.getWorldServerClass())
-					.getMethod(FuzzyMethodContract.newBuilder()
-							.returnTypeExact(MinecraftReflection.getDimensionManager())
-							.build());
+				.getMethod(FuzzyMethodContract.newBuilder()
+					.returnTypeExact(MinecraftReflection.getDimensionManager())
+					.build());
 			worldHandleDimensionManagerAccessor = Accessors.getMethodAccessor(dimensionGetter);
 		}
 		return worldHandleDimensionManagerAccessor;
@@ -1454,11 +1487,11 @@ public class BukkitConverters {
 					if (dimensionFromId == null) {
 						FuzzyReflection reflection = FuzzyReflection.fromClass(dimensionManager, false);
 						FuzzyMethodContract contract = FuzzyMethodContract
-								.newBuilder()
-								.requireModifier(Modifier.STATIC)
-								.parameterExactType(int.class)
-								.returnTypeExact(dimensionManager)
-								.build();
+							.newBuilder()
+							.requireModifier(Modifier.STATIC)
+							.parameterExactType(int.class)
+							.returnTypeExact(dimensionManager)
+							.build();
 						dimensionFromId = Accessors.getMethodAccessor(reflection.getMethod(contract));
 					}
 
@@ -1476,10 +1509,10 @@ public class BukkitConverters {
 					if (dimensionKey == null) {
 						FuzzyReflection fuzzy = FuzzyReflection.fromClass(dimensionManager, false);
 						dimensionKey = Accessors.getFieldAccessor(fuzzy.getField(FuzzyFieldContract
-								.newBuilder()
-								.typeExact(MinecraftReflection.getMinecraftKeyClass())
-								.banModifier(Modifier.STATIC)
-								.build()));
+							.newBuilder()
+							.typeExact(MinecraftReflection.getMinecraftKeyClass())
+							.banModifier(Modifier.STATIC)
+							.build()));
 					}
 
 					MinecraftKey key = MinecraftKey.fromHandle(dimensionKey.get(generic));
@@ -1512,11 +1545,11 @@ public class BukkitConverters {
 					if (idFromDimension == null) {
 						FuzzyReflection reflection = FuzzyReflection.fromClass(dimensionManager, false);
 						FuzzyMethodContract contract = FuzzyMethodContract
-								.newBuilder()
-								.banModifier(Modifier.STATIC)
-								.returnTypeExact(int.class)
-								.parameterCount(0)
-								.build();
+							.newBuilder()
+							.banModifier(Modifier.STATIC)
+							.returnTypeExact(int.class)
+							.parameterCount(0)
+							.build();
 						idFromDimension = Accessors.getMethodAccessor(reflection.getMethod(contract));
 					}
 
@@ -1530,12 +1563,12 @@ public class BukkitConverters {
 			}
 		});
 	}
-	
+
 	private static ConstructorAccessor merchantRecipeListConstructor = null;
 	private static MethodAccessor bukkitMerchantRecipeToCraft = null;
 	private static MethodAccessor craftMerchantRecipeToNMS = null;
 	private static MethodAccessor nmsMerchantRecipeToBukkit = null;
-	
+
 	/**
 	 * Creates a converter from a MerchantRecipeList (which is just an ArrayList of MerchantRecipe wrapper)
 	 * to a {@link List} of {@link MerchantRecipe}. Primarily for the packet OPEN_WINDOW_MERCHANT which is present
@@ -1545,7 +1578,7 @@ public class BukkitConverters {
 	 */
 	public static EquivalentConverter<List<MerchantRecipe>> getMerchantRecipeListConverter() {
 		return ignoreNull(new EquivalentConverter<List<MerchantRecipe>>() {
-			
+
 			@Override
 			public Object getGeneric(List<MerchantRecipe> specific) {
 				if (merchantRecipeListConstructor == null) {
@@ -1557,28 +1590,28 @@ public class BukkitConverters {
 					craftMerchantRecipeToNMS = Accessors.getMethodAccessor(reflection.getMethodByName("toMinecraft"));
 				}
 				return specific.stream().map(recipe -> craftMerchantRecipeToNMS.invoke(bukkitMerchantRecipeToCraft.invoke(null, recipe)))
-						.collect(() -> (List<Object>)merchantRecipeListConstructor.invoke(), List::add, List::addAll);
+					.collect(() -> (List<Object>) merchantRecipeListConstructor.invoke(), List::add, List::addAll);
 			}
-			
+
 			@Override
 			public List<MerchantRecipe> getSpecific(Object generic) {
 				if (nmsMerchantRecipeToBukkit == null) {
 					Class<?> merchantRecipeClass = MinecraftReflection.getMinecraftClass(
-							"world.item.trading.MerchantRecipe","MerchantRecipe"
+						"world.item.trading.MerchantRecipe", "MerchantRecipe"
 					);
 					FuzzyReflection reflection = FuzzyReflection.fromClass(merchantRecipeClass, false);
 					nmsMerchantRecipeToBukkit = Accessors.getMethodAccessor(reflection.getMethodByName("asBukkit"));
 				}
-				return ((List<Object>)generic).stream().map(o -> (MerchantRecipe)nmsMerchantRecipeToBukkit.invoke(o)).collect(Collectors.toList());
+				return ((List<Object>) generic).stream().map(o -> (MerchantRecipe) nmsMerchantRecipeToBukkit.invoke(o)).collect(Collectors.toList());
 			}
-			
+
 			@Override
 			public Class<List<MerchantRecipe>> getSpecificType() {
 				// Damn you Java
 				Class<?> dummy = List.class;
 				return (Class<List<MerchantRecipe>>) dummy;
 			}
-			
+
 		});
 	}
 
@@ -1595,12 +1628,12 @@ public class BukkitConverters {
 
 				if (sectionPositionCreate == null) {
 					sectionPositionCreate = Accessors.getMethodAccessor(
-							FuzzyReflection.fromClass(sectionPositionClass).getMethod(FuzzyMethodContract
-									.newBuilder()
-									.requireModifier(Modifier.STATIC)
-									.returnTypeExact(sectionPositionClass)
-									.parameterExactArray(int.class, int.class, int.class)
-									.build())
+						FuzzyReflection.fromClass(sectionPositionClass).getMethod(FuzzyMethodContract
+							.newBuilder()
+							.requireModifier(Modifier.STATIC)
+							.returnTypeExact(sectionPositionClass)
+							.parameterExactArray(int.class, int.class, int.class)
+							.build())
 					);
 				}
 
@@ -1635,11 +1668,11 @@ public class BukkitConverters {
 					if (gameStateMapField == null) {
 						Class<?> stateClass = MinecraftReflection.getGameStateClass();
 						gameStateMapField = FuzzyReflection
-								.fromClass(stateClass, true)
-								.getField(FuzzyFieldContract
-										.newBuilder()
-										.typeDerivedOf(Map.class)
-										.build());
+							.fromClass(stateClass, true)
+							.getField(FuzzyFieldContract
+								.newBuilder()
+								.typeDerivedOf(Map.class)
+								.build());
 						gameStateMapField.setAccessible(true);
 					}
 
@@ -1664,11 +1697,11 @@ public class BukkitConverters {
 					if (gameStateIdField == null) {
 						Class<?> stateClass = MinecraftReflection.getGameStateClass();
 						gameStateIdField = FuzzyReflection
-								.fromClass(stateClass, true)
-								.getField(FuzzyFieldContract
-										.newBuilder()
-										.typeExact(int.class)
-										.build());
+							.fromClass(stateClass, true)
+							.getField(FuzzyFieldContract
+								.newBuilder()
+								.typeExact(int.class)
+								.build());
 						gameStateIdField.setAccessible(true);
 					}
 

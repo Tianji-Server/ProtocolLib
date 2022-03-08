@@ -1,20 +1,38 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.injector.netty;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Protocol;
@@ -42,29 +60,21 @@ import com.comphenix.protocol.wrappers.Pair;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 
 import com.google.common.base.Preconditions;
-
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.internal.TypeParameterMatcher;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Represents a channel injector.
  * @author Kristian
@@ -183,8 +193,8 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	 * @param factory - the factory that created this injector
 	 */
 	ChannelInjector(Player player, Object networkManager, Channel channel, ChannelListener channelListener, InjectionFactory factory) {
-		this.player =  Preconditions.checkNotNull(player, "player cannot be NULL");
-		this.networkManager =  Preconditions.checkNotNull(networkManager, "networkMananger cannot be NULL");
+		this.player = Preconditions.checkNotNull(player, "player cannot be NULL");
+		this.networkManager = Preconditions.checkNotNull(networkManager, "networkMananger cannot be NULL");
 		this.originalChannel = Preconditions.checkNotNull(channel, "channel cannot be NULL");
 		this.channelListener = Preconditions.checkNotNull(channelListener, "channelListener cannot be NULL");
 		this.factory = Preconditions.checkNotNull(factory, "factory cannot be NULL");
@@ -192,8 +202,8 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 
 		// Get the channel field
 		this.channelField = new VolatileField(FuzzyReflection
-				.fromObject(networkManager, true)
-				.getFieldByType("channel", Channel.class), networkManager, true);
+			.fromObject(networkManager, true)
+			.getFieldByType("channel", Channel.class), networkManager, true);
 	}
 
 	/**
@@ -209,7 +219,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	private void updateBufferMethods() {
 		try {
 			decodeBuffer = vanillaDecoder.getClass().getDeclaredMethod("decode",
-					ChannelHandlerContext.class, ByteBuf.class, List.class);
+				ChannelHandlerContext.class, ByteBuf.class, List.class);
 			decodeBuffer.setAccessible(true);
 		} catch (NoSuchMethodException ex) {
 			throw new IllegalArgumentException("Unable to find decode method in " + vanillaDecoder.getClass());
@@ -217,7 +227,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 
 		try {
 			encodeBuffer = vanillaEncoder.getClass().getDeclaredMethod("encode",
-					ChannelHandlerContext.class, Object.class, ByteBuf.class);
+				ChannelHandlerContext.class, Object.class, ByteBuf.class);
 			encodeBuffer.setAccessible(true);
 		} catch (NoSuchMethodException ex) {
 			throw new IllegalArgumentException("Unable to find encode method in " + vanillaEncoder.getClass());
@@ -364,7 +374,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 					if (unfilteredProcessedPackets.contains(original)) {
 						NetworkMarker marker = getMarker(original);
 
-						if (marker != null)	{
+						if (marker != null) {
 							PacketEvent result = new PacketEvent(ChannelInjector.class);
 							result.setNetworkMarker(marker);
 							return new Pair<>(instance, result);
@@ -380,8 +390,8 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 						// Change packet to be scheduled
 						if (original != changed) {
 							instance = (T) (isHiddenClass(instance.getClass()) ?
-									updatePacketMessageReconstruct(instance, changed, accessor) :
-									updatePacketMessageSetReflection(instance, changed, accessor));
+								updatePacketMessageReconstruct(instance, changed, accessor) :
+								updatePacketMessageSetReflection(instance, changed, accessor));
 						}
 					}
 					return new Pair<>(instance, event != null ? event : BYPASSED_PACKET);
@@ -406,7 +416,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	 */
 	private static Object updatePacketMessageReconstruct(Object instance, Object newPacket, FieldAccessor accessor) {
 		final ObjectReconstructor<?> objectReconstructor =
-				RECONSTRUCTORS.computeIfAbsent(instance.getClass(), ObjectReconstructor::new);
+			RECONSTRUCTORS.computeIfAbsent(instance.getClass(), ObjectReconstructor::new);
 
 		final Object[] values = objectReconstructor.getValues(instance);
 		final Field[] fields = objectReconstructor.getFields();
@@ -523,7 +533,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 			}
 		} catch (Exception e) {
 			channelListener.getReporter().reportDetailed(this,
-					Report.newBuilder(REPORT_CANNOT_INTERCEPT_SERVER_PACKET).callerParam(packet).error(e).build());
+				Report.newBuilder(REPORT_CANNOT_INTERCEPT_SERVER_PACKET).callerParam(packet).error(e).build());
 		} finally {
 			// Attempt to handle the packet nevertheless
 			if (packet != null) {
@@ -618,7 +628,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 			}
 		} catch (Exception e) {
 			channelListener.getReporter().reportDetailed(this,
-					Report.newBuilder(REPORT_CANNOT_INTERCEPT_CLIENT_PACKET).callerParam(byteBuffer).error(e).build());
+				Report.newBuilder(REPORT_CANNOT_INTERCEPT_CLIENT_PACKET).callerParam(byteBuffer).error(e).build());
 		}
 	}
 
@@ -672,9 +682,9 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 
 				// resolve the protocol version field here - if we're unable to find it we don't need to worry about it
 				Field protocolVersionField = FuzzyReflection.fromClass(PACKET_SET_PROTOCOL, true).getField(FuzzyFieldContract.newBuilder()
-						.banModifier(Modifier.STATIC)
-						.typeExact(int.class)
-						.build());
+					.banModifier(Modifier.STATIC)
+					.typeExact(int.class)
+					.build());
 				PROTOCOL_VERSION_ACCESSOR = Accessors.getFieldAccessor(protocolVersionField);
 			} catch (Throwable ex) {
 				PACKET_SET_PROTOCOL = getClass(); // If we can't find it don't worry about it
@@ -746,7 +756,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	/**
 	 * Invoke the sendPacket method in Minecraft.
 	 * @param packet - the packet to send.
- 	 */
+	 */
 	private void invokeSendPacket(Object packet) {
 		Validate.isTrue(!closed, "cannot send packets to a closed channel");
 
@@ -759,7 +769,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 			}
 		} catch (Throwable ex) {
 			ProtocolLibrary.getErrorReporter().reportWarning(this,
-					Report.newBuilder(REPORT_CANNOT_SEND_PACKET).messageParam(packet, playerName).error(ex).build());
+				Report.newBuilder(REPORT_CANNOT_SEND_PACKET).messageParam(packet, playerName).error(ex).build());
 		}
 	}
 
@@ -789,7 +799,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	public Protocol getCurrentProtocol() {
 		if (PROTOCOL_ACCESSOR == null) {
 			PROTOCOL_ACCESSOR = Accessors.getFieldAccessor(
-					networkManager.getClass(), MinecraftReflection.getEnumProtocolClass(), true);
+				networkManager.getClass(), MinecraftReflection.getEnumProtocolClass(), true);
 		}
 		return Protocol.fromVanilla((Enum<?>) PROTOCOL_ACCESSOR.get(networkManager));
 	}
@@ -802,7 +812,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 		if (playerConnection == null) {
 			Player player = getPlayer();
 			if (player == null) {
-				throw new IllegalStateException("cannot send packet to offline player" + (playerName != null ?  " " + playerName : ""));
+				throw new IllegalStateException("cannot send packet to offline player" + (playerName != null ? " " + playerName : ""));
 			}
 
 			playerConnection = MinecraftFields.getPlayerConnection(player);
@@ -837,7 +847,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	 * @param player - current instance.
 	 */
 	@Override
-    public void setPlayer(Player player) {
+	public void setPlayer(Player player) {
 		this.player = player;
 		this.playerName = player.getName();
 	}
@@ -847,7 +857,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	 * @param updated - updated instance.
 	 */
 	@Override
-    public void setUpdatedPlayer(Player updated) {
+	public void setUpdatedPlayer(Player updated) {
 		this.updated = updated;
 		this.playerName = updated.getName();
 	}
@@ -888,12 +898,12 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 				// In that case, it may attempt to invoke an asynchronous ServerPingEvent (see PacketStatusListener)
 				// using SimplePluginManager.callEvent(). But, since this has already been locked by the main thread,
 				// we end up with a deadlock. The main thread is waiting for the worker thread to process the task, and
-			    // the worker thread is waiting for the main thread to finish executing PlayerQuitEvent.
+				// the worker thread is waiting for the main thread to finish executing PlayerQuitEvent.
 				//
 				// TL;DR: Concurrency is hard.
 				executeInChannelThread(() -> {
 					String[] handlers = new String[] {
-							"protocol_lib_decoder", "protocol_lib_finish", "protocol_lib_encoder"
+						"protocol_lib_decoder", "protocol_lib_finish", "protocol_lib_encoder"
 					};
 
 					for (String handler : handlers) {
@@ -917,7 +927,6 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 	}
 
 
-
 	/**
 	 * Execute a specific command in the channel thread.
 	 * <p>
@@ -930,7 +939,7 @@ public class ChannelInjector extends ByteToMessageDecoder implements Injector {
 				command.run();
 			} catch (Exception e) {
 				ProtocolLibrary.getErrorReporter().reportDetailed(ChannelInjector.this,
-						Report.newBuilder(REPORT_CANNOT_EXECUTE_IN_CHANNEL_THREAD).error(e).build());
+					Report.newBuilder(REPORT_CANNOT_EXECUTE_IN_CHANNEL_THREAD).error(e).build());
 			}
 		});
 	}

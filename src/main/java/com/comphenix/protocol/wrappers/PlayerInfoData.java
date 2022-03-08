@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.wrappers;
 
@@ -134,23 +134,23 @@ public class PlayerInfoData {
 			public PlayerInfoData getSpecific(Object generic) {
 				if (MinecraftReflection.isPlayerInfoData(generic)) {
 					StructureModifier<Object> modifier = new StructureModifier<>(generic.getClass(), null, false)
-							.withTarget(generic);
+						.withTarget(generic);
 
 					StructureModifier<WrappedGameProfile> gameProfiles = modifier.withType(
-							MinecraftReflection.getGameProfileClass(), BukkitConverters.getWrappedGameProfileConverter());
+						MinecraftReflection.getGameProfileClass(), BukkitConverters.getWrappedGameProfileConverter());
 					WrappedGameProfile gameProfile = gameProfiles.read(0);
 
 					StructureModifier<Integer> ints = modifier.withType(int.class);
 					int latency = ints.read(0);
 
 					StructureModifier<NativeGameMode> gameModes = modifier.withType(
-							EnumWrappers.getGameModeClass(), EnumWrappers.getGameModeConverter());
+						EnumWrappers.getGameModeClass(), EnumWrappers.getGameModeConverter());
 					NativeGameMode gameMode = gameModes.read(0);
 
 					StructureModifier<WrappedChatComponent> displayNames = modifier.withType(
-							MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter());
+						MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter());
 					WrappedChatComponent displayName = displayNames.read(0);
-					
+
 					return new PlayerInfoData(gameProfile, latency, gameMode, displayName);
 				}
 
@@ -171,16 +171,16 @@ public class PlayerInfoData {
 		// Fast checks
 		if (this == obj) return true;
 		if (obj == null) return false;
-		
+
 		// Only compare objects of similar type
 		if (obj instanceof PlayerInfoData) {
 			PlayerInfoData other = (PlayerInfoData) obj;
 			return profile.equals(other.profile) && latency == other.latency && gameMode == other.gameMode
-					&& Objects.equals(displayName, other.displayName);
+				&& Objects.equals(displayName, other.displayName);
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(latency, gameMode, profile, displayName);
@@ -189,6 +189,6 @@ public class PlayerInfoData {
 	@Override
 	public String toString() {
 		return String.format("PlayerInfoData[latency=%s, gameMode=%s, profile=%s, displayName=%s]",
-				latency, gameMode, profile, displayName);
+			latency, gameMode, profile, displayName);
 	}
 }

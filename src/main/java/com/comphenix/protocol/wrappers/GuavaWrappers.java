@@ -7,28 +7,31 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.comphenix.protocol.wrappers.collection.ConvertedSet;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
 /**
  * Represents wrappers for Minecraft's own version of Guava.
+ *
  * @author Kristian
  */
 class GuavaWrappers {
 	private static volatile boolean USE_REFLECTION_FALLBACK = false;
-	
+
 	/**
 	 * Wrap a Bukkit multimap around Minecraft's internal multimap.
+	 *
 	 * @param multimap - the multimap to wrap.
 	 * @return The Bukkit multimap.
 	 */
 	public static <TKey, TValue> Multimap<TKey, TValue> getBukkitMultimap(
-			final com.google.common.collect.Multimap<TKey, TValue> multimap) {
-		
+		final com.google.common.collect.Multimap<TKey, TValue> multimap) {
+
 		if (USE_REFLECTION_FALLBACK) {
 			return GuavaReflection.getBukkitMultimap(multimap);
 		}
-		
+
 		Multimap<TKey, TValue> result = new Multimap<TKey, TValue>() {
 			@Override
 			public Map<TKey, Collection<TValue>> asMap() {
@@ -98,7 +101,7 @@ class GuavaWrappers {
 			@Override
 			public boolean putAll(com.google.common.collect.Multimap<? extends TKey, ? extends TValue> arg0) {
 				boolean result = false;
-				
+
 				// Add each entry
 				for (Entry<? extends TKey, ? extends TValue> entry : arg0.entries()) {
 					result |= multimap.put(entry.getKey(), entry.getValue());
@@ -136,7 +139,7 @@ class GuavaWrappers {
 				return multimap.values();
 			}
 		};
-		
+
 		try {
 			result.size(); // Test
 			return result;
@@ -146,12 +149,12 @@ class GuavaWrappers {
 			return GuavaReflection.getBukkitMultimap(multimap);
 		}
 	}
-	
+
 	public static <TValue> Multiset<TValue> getBukkitMultiset(final com.google.common.collect.Multiset<TValue> multiset) {
 		if (USE_REFLECTION_FALLBACK) {
 			return GuavaReflection.getBukkitMultiset(multiset);
 		}
-		
+
 		Multiset<TValue> result = new Multiset<TValue>() {
 			@Override
 			public int add(TValue arg0, int arg1) {
@@ -198,17 +201,17 @@ class GuavaWrappers {
 				return new ConvertedSet<
 					com.google.common.collect.Multiset.Entry<TValue>,
 					Multiset.Entry<TValue>>
-				(multiset.entrySet()) {
-					
+					(multiset.entrySet()) {
+
 					@Override
 					protected com.google.common.collect.Multiset.Entry<TValue> toOuter(
-							com.google.common.collect.Multiset.Entry<TValue> inner) {
+						com.google.common.collect.Multiset.Entry<TValue> inner) {
 						return getBukkitEntry(inner);
 					}
 
 					@Override
 					protected com.google.common.collect.Multiset.Entry<TValue> toInner(
-							com.google.common.collect.Multiset.Entry<TValue> outer) {
+						com.google.common.collect.Multiset.Entry<TValue> outer) {
 						throw new UnsupportedOperationException("Cannot convert " + outer);
 					}
 				};
@@ -284,7 +287,7 @@ class GuavaWrappers {
 				return multiset.toString();
 			}
 		};
-		
+
 		try {
 			result.size(); // Test
 			return result;
@@ -293,7 +296,7 @@ class GuavaWrappers {
 			return GuavaReflection.getBukkitMultiset(multiset);
 		}
 	}
-	
+
 	private static <TValue> Multiset.Entry<TValue> getBukkitEntry(final com.google.common.collect.Multiset.Entry<TValue> entry) {
 		return new Multiset.Entry<TValue>() {
 			@Override

@@ -23,10 +23,11 @@ import org.bukkit.plugin.Plugin;
  * Represents a listener that receives notifications when packets are sending or being received.
  * <p>
  * Use {@link PacketAdapter} for a simple wrapper around this interface.
+ *
  * @author Kristian
  */
 public interface PacketListener {
-	
+
 	/**
 	 * Invoked right before a packet is transmitted from the server to the client.
 	 * <p>
@@ -36,6 +37,7 @@ public interface PacketListener {
 	 * <p>
 	 * In Minecraft 1.7.2 and later, this method MAY be executed asynchronously, but only if {@link ListenerOptions#ASYNC}
 	 * have been specified in the listener. This is off by default.
+	 *
 	 * @param event - the packet that should be sent.
 	 */
 	public void onPacketSending(PacketEvent event);
@@ -47,24 +49,28 @@ public interface PacketListener {
 	 * This method will be called <i>asynchronously</i>! You should synchronize with the main
 	 * thread using {@link org.bukkit.scheduler.BukkitScheduler#scheduleSyncDelayedTask(Plugin, Runnable, long) scheduleSyncDelayedTask}
 	 * if you need to call the Bukkit API.
+	 *
 	 * @param event - the packet that has been received.
 	 */
 	public void onPacketReceiving(PacketEvent event);
-	
+
 	/**
 	 * Retrieve which packets sent by the server this listener will observe.
+	 *
 	 * @return List of server packets to observe, along with the priority.
 	 */
 	public ListeningWhitelist getSendingWhitelist();
-	
+
 	/**
 	 * Retrieve which packets sent by the client this listener will observe.
+	 *
 	 * @return List of server packets to observe, along with the priority.
 	 */
 	public ListeningWhitelist getReceivingWhitelist();
-	
+
 	/**
 	 * Retrieve the plugin that created list packet listener.
+	 *
 	 * @return The plugin, or NULL if not available.
 	 */
 	public Plugin getPlugin();

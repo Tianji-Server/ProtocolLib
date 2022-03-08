@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.injector.netty;
 
@@ -23,7 +23,7 @@ import java.util.Queue;
  * Stores packets that need to be sent without being handled by the listeners (filtered=false).
  * When other packets sent after sending the packet are removed, the packet is removed as well
  * to prevent a memory leak, assuming a consistent send order is in place.
- * 
+ *
  * @author bergerkiller
  */
 public class PacketFilterQueue {
@@ -31,7 +31,7 @@ public class PacketFilterQueue {
 
 	/**
 	 * Adds a packet to this queue, indicating further on that it should not be filtered.
-	 * 
+	 *
 	 * @param packet
 	 */
 	public synchronized void add(Object packet) {
@@ -41,7 +41,7 @@ public class PacketFilterQueue {
 	/**
 	 * Checks whether a packet is contained inside this queue, indicating
 	 * it should not be filtered.
-	 * 
+	 *
 	 * @param packet
 	 * @return True if contained and packet should not be filtered (filtered=false)
 	 */
@@ -53,7 +53,7 @@ public class PacketFilterQueue {
 	 * Checks whether a packet is contained inside this queue and removes it if so.
 	 * Other packets marked in this queue that were sent before this packet are
 	 * removed from the queue also, avoiding memory leaks because of dropped packets.
-	 * 
+	 *
 	 * @param packet
 	 * @return True if contained and packet should not be filtered (filtered=false)
 	 */

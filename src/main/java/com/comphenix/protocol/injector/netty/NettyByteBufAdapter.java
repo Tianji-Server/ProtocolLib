@@ -1,24 +1,20 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.injector.netty;
-
-import io.netty.buffer.AbstractByteBuf;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -36,7 +32,11 @@ import java.nio.channels.WritableByteChannel;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
+
 import com.google.common.io.ByteStreams;
+import io.netty.buffer.AbstractByteBuf;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 /**
  * Construct a ByteBuf around an input stream and an output stream.
@@ -49,19 +49,19 @@ import com.google.common.io.ByteStreams;
 public class NettyByteBufAdapter extends AbstractByteBuf {
 	private DataInputStream input;
 	private DataOutputStream output;
-	
+
 	// For modifying the reader or writer index
 	private static FieldAccessor READER_INDEX;
 	private static FieldAccessor WRITER_INDEX;
-	
+
 	private static final int CAPACITY = Integer.MAX_VALUE;
-	
+
 	private NettyByteBufAdapter(DataInputStream input, DataOutputStream output) {
 		// Just pick a figure
 		super(CAPACITY);
 		this.input = input;
 		this.output = output;
-		
+
 		// Prepare accessors
 		try {
 			if (READER_INDEX == null) {
@@ -73,7 +73,7 @@ public class NettyByteBufAdapter extends AbstractByteBuf {
 		} catch (Exception e) {
 			throw new RuntimeException("Cannot initialize ByteBufAdapter.", e);
 		}
-		
+
 		// "Infinite" reading/writing
 		if (input == null)
 			READER_INDEX.set(this, Integer.MAX_VALUE);
@@ -89,7 +89,7 @@ public class NettyByteBufAdapter extends AbstractByteBuf {
 	public static ByteBuf packetReader(DataInputStream input) {
 		return (ByteBuf) MinecraftReflection.getPacketDataSerializer(new NettyByteBufAdapter(input, null));
 	}
-	
+
 	/**
 	 * Construct a new Minecraft packet deserializer using the current byte buf adapter.
 	 * @param output - the output stream.
@@ -98,7 +98,7 @@ public class NettyByteBufAdapter extends AbstractByteBuf {
 	public static ByteBuf packetWriter(DataOutputStream output) {
 		return (ByteBuf) MinecraftReflection.getPacketDataSerializer(new NettyByteBufAdapter(null, output));
 	}
-	
+
 	@Override
 	public int refCnt() {
 		return 1;
@@ -275,7 +275,7 @@ public class NettyByteBufAdapter extends AbstractByteBuf {
 	@Override
 	public int getBytes(int index, GatheringByteChannel out, int length) throws IOException {
 		byte[] data = ByteStreams.toByteArray(ByteStreams.limit(input, length));
-		
+
 		out.write(ByteBuffer.wrap(data));
 		return data.length;
 	}
@@ -284,7 +284,7 @@ public class NettyByteBufAdapter extends AbstractByteBuf {
 	public ByteBuf setBytes(int index, ByteBuf src, int srcIndex, int length) {
 		byte[] buffer = new byte[length];
 		src.getBytes(srcIndex, buffer);
-		
+
 		try {
 			output.write(buffer);
 			return this;
@@ -326,7 +326,7 @@ public class NettyByteBufAdapter extends AbstractByteBuf {
 	public int setBytes(int index, ScatteringByteChannel in, int length) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(length);
 		WritableByteChannel channel = Channels.newChannel(output);
-		
+
 		int count = in.read(buffer);
 		channel.write(buffer);
 		return count;

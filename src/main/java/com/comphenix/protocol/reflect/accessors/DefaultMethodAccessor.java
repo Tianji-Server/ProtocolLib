@@ -5,11 +5,11 @@ import java.lang.reflect.Method;
 
 final class DefaultMethodAccessor implements MethodAccessor {
 	private final Method method;
-	
+
 	public DefaultMethodAccessor(Method method) {
 		this.method = method;
 	}
-	
+
 	@Override
 	public Object invoke(Object target, Object... args) {
 		try {
@@ -22,7 +22,7 @@ final class DefaultMethodAccessor implements MethodAccessor {
 			throw e;
 		}
 	}
-	
+
 	@Override
 	public Method getMethod() {
 		return method;
@@ -37,14 +37,14 @@ final class DefaultMethodAccessor implements MethodAccessor {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		
+
 		if (obj instanceof DefaultMethodAccessor) {
 			DefaultMethodAccessor other = (DefaultMethodAccessor) obj;
 			return other.method == method;
 		}
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "DefaultMethodAccessor [method=" + method + "]";

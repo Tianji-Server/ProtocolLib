@@ -1,11 +1,12 @@
 package com.comphenix.protocol.reflect.accessors;
 
-import com.comphenix.protocol.ProtocolLogger;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
+
+import com.comphenix.protocol.ProtocolLogger;
 
 final class UnsafeFieldAccess {
 

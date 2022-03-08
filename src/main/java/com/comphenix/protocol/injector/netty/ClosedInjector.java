@@ -1,12 +1,13 @@
 package com.comphenix.protocol.injector.netty;
 
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.PacketType.Protocol;
 import com.comphenix.protocol.events.NetworkMarker;
 
+import org.bukkit.entity.Player;
+
 /**
  * Represents a closed injector.
+ *
  * @author Kristian
  */
 public class ClosedInjector implements Injector {
@@ -14,6 +15,7 @@ public class ClosedInjector implements Injector {
 
 	/**
 	 * Construct a new injector that is always closed.
+	 *
 	 * @param player - the associated player.
 	 */
 	public ClosedInjector(Player player) {
@@ -59,12 +61,12 @@ public class ClosedInjector implements Injector {
 	public void setUpdatedPlayer(Player player) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public Player getPlayer() {
 		return player;
 	}
-	
+
 	@Override
 	public void setPlayer(Player player) {
 		this.player = player;

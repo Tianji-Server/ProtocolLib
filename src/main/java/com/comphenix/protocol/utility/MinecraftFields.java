@@ -1,14 +1,15 @@
 package com.comphenix.protocol.utility;
 
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.injector.BukkitUnwrapper;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.FieldAccessor;
+
 import com.google.common.base.Preconditions;
+import org.bukkit.entity.Player;
 
 /**
  * Retrieve the content of well-known fields in Minecraft.
+ *
  * @author Kristian
  */
 public class MinecraftFields {
@@ -20,15 +21,16 @@ public class MinecraftFields {
 	private MinecraftFields() {
 		// Not constructable
 	}
-	
+
 	/**
 	 * Retrieve the network manager associated with a particular player.
+	 *
 	 * @param player - the player.
 	 * @return The network manager, or NULL if no network manager has been associated yet.
 	 */
 	public static Object getNetworkManager(Player player) {
 		Object nmsPlayer = BukkitUnwrapper.getInstance().unwrapItem(player);
-		
+
 		if (NETWORK_ACCESSOR == null) {
 			Class<?> networkClass = MinecraftReflection.getNetworkManagerClass();
 			Class<?> connectionClass = MinecraftReflection.getPlayerConnectionClass();
@@ -36,14 +38,15 @@ public class MinecraftFields {
 		}
 		// Retrieve the network manager
 		final Object playerConnection = getPlayerConnection(nmsPlayer);
-		
+
 		if (playerConnection != null)
 			return NETWORK_ACCESSOR.get(playerConnection);
 		return null;
 	}
-	
+
 	/**
 	 * Retrieve the PlayerConnection (or NetServerHandler) associated with a player.
+	 *
 	 * @param player - the player.
 	 * @return The player connection.
 	 */
@@ -54,6 +57,7 @@ public class MinecraftFields {
 
 	/**
 	 * Retrieve the PlayerConnection (or NetServerHandler) associated with a player.
+	 *
 	 * @param nmsPlayer - the NMS player.
 	 * @return The player connection.
 	 */

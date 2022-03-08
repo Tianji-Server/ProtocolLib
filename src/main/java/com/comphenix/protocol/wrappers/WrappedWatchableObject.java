@@ -1,24 +1,20 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2016 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2016 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.wrappers;
-
-import static com.comphenix.protocol.utility.MinecraftReflection.is;
-
-import org.bukkit.inventory.ItemStack;
 
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.reflect.accessors.Accessors;
@@ -27,10 +23,13 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.EnumWrappers.Direction;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Serializer;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.WrappedDataWatcherObject;
-import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
+
 import com.google.common.base.Optional;
+import org.bukkit.inventory.ItemStack;
+
+import static com.comphenix.protocol.utility.MinecraftReflection.is;
 
 /**
  * Represents a DataWatcher Item in 1.8 thru 1.10.
@@ -177,8 +176,8 @@ public class WrappedWatchableObject extends AbstractWrapper {
 		if (obj instanceof WrappedWatchableObject) {
 			WrappedWatchableObject that = (WrappedWatchableObject) obj;
 			return this.getIndex() == that.getIndex() &&
-					this.getRawValue().equals(that.getRawValue()) &&
-					this.getDirtyState() == that.getDirtyState();
+				this.getRawValue().equals(that.getRawValue()) &&
+				this.getDirtyState() == that.getDirtyState();
 		}
 
 		return false;
@@ -204,7 +203,7 @@ public class WrappedWatchableObject extends AbstractWrapper {
 	/**
 	 * Retrieve the wrapped object value, if needed. All non-primitive objects
 	 * with {@link Serializer}s should be covered by this.
-	 * 
+	 *
 	 * @param value - the raw NMS object to wrap.
 	 * @return The wrapped object.
 	 */
@@ -232,7 +231,7 @@ public class WrappedWatchableObject extends AbstractWrapper {
 			return BukkitConverters.getItemStackConverter().getSpecific(value);
 		} else if (is(MinecraftReflection.getIBlockDataClass(), value)) {
 			return BukkitConverters.getWrappedBlockDataConverter().getSpecific(value);
-		} else if (is (Vector3F.getMinecraftClass(), value)) {
+		} else if (is(Vector3F.getMinecraftClass(), value)) {
 			return Vector3F.getConverter().getSpecific(value);
 		} else if (is(MinecraftReflection.getBlockPositionClass(), value)) {
 			return BlockPosition.getConverter().getSpecific(value);
@@ -254,7 +253,7 @@ public class WrappedWatchableObject extends AbstractWrapper {
 
 	/**
 	 * Retrieve the raw NMS value.
-	 * 
+	 *
 	 * @param wrapped - the wrapped position.
 	 * @return The raw NMS object.
 	 */

@@ -5,7 +5,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import com.comphenix.protocol.PacketTypeLookup.ClassLookup;
@@ -14,11 +20,11 @@ import com.comphenix.protocol.injector.packet.PacketRegistry;
 import com.comphenix.protocol.utility.Constants;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,8 +33,10 @@ import org.bukkit.scheduler.BukkitRunnable;
  * Represents the type of a packet in a specific protocol.
  * <p>
  * Note that vanilla Minecraft reuses packet IDs per protocol (ping, game, login) and IDs are subject to change, so they are not reliable.
+ *
  * @author Kristian
  */
+/* @formatter:off */
 public class PacketType implements Serializable, Cloneable, Comparable<PacketType> {
 	// Increment whenever the type changes
 	private static final long serialVersionUID = 1L;

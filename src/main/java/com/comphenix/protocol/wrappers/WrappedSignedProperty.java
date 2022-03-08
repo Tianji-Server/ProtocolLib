@@ -5,10 +5,12 @@ import java.security.PublicKey;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.ConstructorAccessor;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
+
 import com.google.common.base.Objects;
 
 /**
  * Represents a wrapper over a signed property.
+ *
  * @author Kristian
  */
 public class WrappedSignedProperty extends AbstractWrapper {
@@ -45,9 +47,10 @@ public class WrappedSignedProperty extends AbstractWrapper {
 			throw new RuntimeException("Failed to obtain methods for Property.", ex);
 		}
 	}
-	
+
 	/**
 	 * Construct a new wrapped signed property from the given values.
+	 *
 	 * @param name - the name of the property.
 	 * @param value - the value of the property.
 	 * @param signature - the BASE64-encoded signature of the value.
@@ -55,27 +58,30 @@ public class WrappedSignedProperty extends AbstractWrapper {
 	public WrappedSignedProperty(String name, String value, String signature) {
 		this(CONSTRUCTOR.invoke(name, value, signature));
 	}
-	
+
 	/**
 	 * Construct a new wrapped signed property from a given handle.
+	 *
 	 * @param handle - the handle.
 	 */
 	private WrappedSignedProperty(Object handle) {
 		super(PROPERTY);
 		setHandle(handle);
 	}
-	
+
 	/**
 	 * Construct a new signed property from a given NMS property.
+	 *
 	 * @param handle - the property.
 	 * @return The wrapped signed property.
 	 */
 	public static WrappedSignedProperty fromHandle(Object handle) {
 		return new WrappedSignedProperty(handle);
 	}
-	
+
 	/**
 	 * Construct a new wrapped signed property from the given values.
+	 *
 	 * @param name - the name of the property.
 	 * @param value - the value of the property.
 	 * @param signature - the BASE64-encoded signature of the value.
@@ -87,6 +93,7 @@ public class WrappedSignedProperty extends AbstractWrapper {
 
 	/**
 	 * Retrieve the name of the underlying property, such as "textures".
+	 *
 	 * @return Name of the property.
 	 */
 	public String getName() {
@@ -95,6 +102,7 @@ public class WrappedSignedProperty extends AbstractWrapper {
 
 	/**
 	 * Retrieve the signature of the property (base64) as returned by the session server's /hasJoined.
+	 *
 	 * @return The signature of the property.
 	 */
 	public String getSignature() {
@@ -103,7 +111,8 @@ public class WrappedSignedProperty extends AbstractWrapper {
 
 	/**
 	 * Retrieve the value of the property (base64) as return by the session server's /hasJoined
-	 * @return  The value of the property.
+	 *
+	 * @return The value of the property.
 	 */
 	public String getValue() {
 		return (String) GET_VALUE.invoke(handle);
@@ -111,14 +120,16 @@ public class WrappedSignedProperty extends AbstractWrapper {
 
 	/**
 	 * Determine if this property has a signature.
+	 *
 	 * @return TRUE if it does, FALSE otherwise.
 	 */
 	public boolean hasSignature() {
 		return (Boolean) HAS_SIGNATURE.invoke(handle);
 	}
-	
+
 	/**
 	 * Determine if the signature of this property is valid and signed by the corresponding private key.
+	 *
 	 * @param key - the public key.
 	 * @return TRUE if it is, FALSE otherwise.
 	 */
@@ -130,11 +141,11 @@ public class WrappedSignedProperty extends AbstractWrapper {
 	public int hashCode() {
 		return Objects.hashCode(getName(), getValue(), getSignature());
 	}
-	
+
 	@Override
 	public boolean equals(Object object) {
 		if (object == this) return true;
-		
+
 		if (object instanceof WrappedSignedProperty) {
 			WrappedSignedProperty that = (WrappedSignedProperty) object;
 			return Objects.equal(this.getName(), that.getName())

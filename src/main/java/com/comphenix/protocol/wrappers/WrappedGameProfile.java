@@ -3,9 +3,6 @@ package com.comphenix.protocol.wrappers;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.error.PluginContext;
 import com.comphenix.protocol.error.Report;
@@ -17,12 +14,16 @@ import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.collection.ConvertedMultimap;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.collect.Multimap;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 /**
  * Represents a wrapper for a game profile.
+ *
  * @author Kristian
  */
 public class WrappedGameProfile extends AbstractWrapper {
@@ -31,21 +32,21 @@ public class WrappedGameProfile extends AbstractWrapper {
 	private static final Class<?> GAME_PROFILE = MinecraftReflection.getGameProfileClass();
 
 	private static final ConstructorAccessor CREATE_STRING_STRING = Accessors.getConstructorAccessorOrNull(
-			GAME_PROFILE, String.class, String.class);
+		GAME_PROFILE, String.class, String.class);
 	private static final ConstructorAccessor CREATE_UUID_STRING = Accessors.getConstructorAccessorOrNull(
-			GAME_PROFILE, UUID.class, String.class);
+		GAME_PROFILE, UUID.class, String.class);
 
 	private static final FieldAccessor GET_UUID_STRING = Accessors.getFieldAcccessorOrNull(
-			GAME_PROFILE, "id", String.class);
+		GAME_PROFILE, "id", String.class);
 
 	private static final MethodAccessor GET_ID = Accessors.getMethodAcccessorOrNull(
-			GAME_PROFILE, "getId");
+		GAME_PROFILE, "getId");
 	private static final MethodAccessor GET_NAME = Accessors.getMethodAcccessorOrNull(
-			GAME_PROFILE, "getName");
+		GAME_PROFILE, "getName");
 	private static final MethodAccessor GET_PROPERTIES = Accessors.getMethodAcccessorOrNull(
-			GAME_PROFILE, "getProperties");
+		GAME_PROFILE, "getProperties");
 	private static final MethodAccessor IS_COMPLETE = Accessors.getMethodAcccessorOrNull(
-			GAME_PROFILE, "isComplete");
+		GAME_PROFILE, "isComplete");
 
 	// Fetching game profile
 	private static FieldAccessor PLAYER_PROFILE;
@@ -67,7 +68,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 	 * Retrieve the associated game profile of a player.
 	 * <p>
 	 * Note that this may not exist in the current Minecraft version.
-	 * 
+	 *
 	 * @param player - the player.
 	 * @return The game profile.
 	 */
@@ -86,7 +87,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 	 * Retrieve the associated game profile of an offline player.
 	 * <p>
 	 * Note that this may not exist in the current Minecraft version.
-	 * 
+	 *
 	 * @param player - the offline player.
 	 * @return The game profile.
 	 */
@@ -107,7 +108,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 	 * IDs that cannot be parsed as an UUID will be hashed and form a version 3 UUID instead.
 	 * <p>
 	 * This method is deprecated for Minecraft 1.7.8 and above.
-	 * 
+	 *
 	 * @param id - the UUID of the player.
 	 * @param name - the name of the player.
 	 */
@@ -128,7 +129,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 	 * Construct a new game profile with the given properties.
 	 * <p>
 	 * Note that at least one of the parameters must be non-null.
-	 * 
+	 *
 	 * @param uuid - the UUID of the player, or NULL.
 	 * @param name - the name of the player, or NULL.
 	 */
@@ -146,7 +147,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Construct a wrapper around an existing game profile.
-	 * 
+	 *
 	 * @param handle - the underlying profile, or NULL.
 	 * @return A wrapper around an existing game profile.
 	 */
@@ -159,7 +160,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Parse an UUID using very lax rules, as specified in {@link #WrappedGameProfile(UUID, String)}.
-	 * 
+	 *
 	 * @param id - text.
 	 * @return The corresponding UUID.
 	 * @throws IllegalArgumentException If we cannot parse the text.
@@ -173,8 +174,8 @@ public class WrappedGameProfile extends AbstractWrapper {
 			// Warn once every hour (per plugin)
 			ProtocolLibrary.getErrorReporter()
 				.reportWarning(WrappedGameProfile.class, Report.newBuilder(REPORT_INVALID_UUID)
-				.rateLimit(1, TimeUnit.HOURS)
-				.messageParam(PluginContext.getPluginCaller(new Exception()), id));
+					.rateLimit(1, TimeUnit.HOURS)
+					.messageParam(PluginContext.getPluginCaller(new Exception()), id));
 			return UUID.nameUUIDFromBytes(id.getBytes(Charsets.UTF_8));
 		}
 	}
@@ -185,7 +186,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 	 * Note that Minecraft 1.7.5 and earlier doesn't use UUIDs internally, and it may not be possible to convert the string to an UUID.
 	 * <p>
 	 * We use the same lax conversion as in {@link #WrappedGameProfile(String, String)}.
-	 * 
+	 *
 	 * @return The UUID, or NULL if the UUID is NULL.
 	 * @throws IllegalStateException If we cannot parse the internal ID as an UUID.
 	 */
@@ -218,7 +219,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 	 * Note that there's nothing stopping plugins from creating non-standard UUIDs.
 	 * <p>
 	 * In Minecraft 1.7.8 and later, this simply returns the string form of {@link #getUUID()}.
-	 * 
+	 *
 	 * @return The UUID of the player, or NULL if not computed.
 	 */
 	public String getId() {
@@ -234,7 +235,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Retrieve the name of the player.
-	 * 
+	 *
 	 * @return The player name.
 	 */
 	public String getName() {
@@ -247,7 +248,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Retrieve the property map of signed values.
-	 * 
+	 *
 	 * @return Property map.
 	 */
 	// In the protocol hack and 1.8 it is a ForwardingMultimap
@@ -283,7 +284,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Construct a new game profile with the same ID, but different name.
-	 * 
+	 *
 	 * @param name - the new name of the profile to create.
 	 * @return The new game profile.
 	 */
@@ -293,7 +294,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Construct a new game profile with the same name, but different id.
-	 * 
+	 *
 	 * @param id - the new id of the profile to create.
 	 * @return The new game profile.
 	 */
@@ -303,7 +304,7 @@ public class WrappedGameProfile extends AbstractWrapper {
 
 	/**
 	 * Determine if the game profile contains both an UUID and a name.
-	 * 
+	 *
 	 * @return TRUE if it does, FALSE otherwise.
 	 */
 	public boolean isComplete() {

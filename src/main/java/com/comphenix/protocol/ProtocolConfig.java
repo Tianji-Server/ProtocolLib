@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2012 Kristian S. Stangeland
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the 
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of 
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program; 
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol;
 
@@ -22,19 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.plugin.Plugin;
-
 import com.comphenix.protocol.injector.PlayerInjectHooks;
+
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.Plugin;
 
 /**
  * Represents the configuration of ProtocolLib.
- * 
+ *
  * @author Kristian
  */
 public class ProtocolConfig {
@@ -98,7 +98,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Load the last update time stamp from the file system.
-	 * 
+	 *
 	 * @return Last update time stamp.
 	 */
 	private long loadLastUpdate() {
@@ -119,7 +119,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Store the given time stamp.
-	 * 
+	 *
 	 * @param value - time stamp to store.
 	 */
 	private void saveLastUpdate(long value) {
@@ -140,7 +140,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the file that is used to store the update time stamp.
-	 * 
+	 *
 	 * @return File storing the update time stamp.
 	 */
 	private File getLastUpdateFile() {
@@ -149,7 +149,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Load data sections.
-	 * 
+	 *
 	 * @param copyDefaults - whether or not to copy configuration defaults.
 	 */
 	private void loadSections(boolean copyDefaults) {
@@ -180,7 +180,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set a particular configuration key value pair.
-	 * 
+	 *
 	 * @param section - the configuration root.
 	 * @param path - the path to the key.
 	 * @param value - the value to set.
@@ -210,7 +210,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve a reference to the configuration file.
-	 * 
+	 *
 	 * @return Configuration file on disk.
 	 */
 	public File getFile() {
@@ -219,7 +219,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Determine if detailed error reporting is enabled. Default FALSE.
-	 * 
+	 *
 	 * @return TRUE if it is enabled, FALSE otherwise.
 	 */
 	public boolean isDetailedErrorReporting() {
@@ -228,7 +228,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set whether or not detailed error reporting is enabled.
-	 * 
+	 *
 	 * @param value - TRUE if it is enabled, FALSE otherwise.
 	 */
 	public void setDetailedErrorReporting(boolean value) {
@@ -237,7 +237,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve whether or not ProtocolLib should determine if a new version has been released.
-	 * 
+	 *
 	 * @return TRUE if it should do this automatically, FALSE otherwise.
 	 */
 	public boolean isAutoNotify() {
@@ -246,7 +246,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set whether or not ProtocolLib should determine if a new version has been released.
-	 * 
+	 *
 	 * @param value - TRUE to do this automatically, FALSE otherwise.
 	 */
 	public void setAutoNotify(boolean value) {
@@ -256,7 +256,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve whether or not ProtocolLib should automatically download the new version.
-	 * 
+	 *
 	 * @return TRUE if it should, FALSE otherwise.
 	 */
 	public boolean isAutoDownload() {
@@ -265,7 +265,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set whether or not ProtocolLib should automatically download the new version.
-	 * 
+	 *
 	 * @param value - TRUE if it should. FALSE otherwise.
 	 */
 	public void setAutoDownload(boolean value) {
@@ -277,7 +277,7 @@ public class ProtocolConfig {
 	 * Determine whether or not debug mode is enabled.
 	 * <p>
 	 * This grants access to the filter command.
-	 * 
+	 *
 	 * @return TRUE if it is, FALSE otherwise.
 	 */
 	public boolean isDebug() {
@@ -286,7 +286,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set whether or not debug mode is enabled.
-	 * 
+	 *
 	 * @param value - TRUE if it is enabled, FALSE otherwise.
 	 */
 	public void setDebug(boolean value) {
@@ -296,7 +296,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve an immutable list of every suppressed report type.
-	 * 
+	 *
 	 * @return Every suppressed report type.
 	 */
 	public ImmutableList<String> getSuppressedReports() {
@@ -305,7 +305,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set the list of suppressed report types,
-	 * 
+	 *
 	 * @param reports - suppressed report types.
 	 */
 	public void setSuppressedReports(List<String> reports) {
@@ -315,7 +315,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the amount of time to wait until checking for a new update.
-	 * 
+	 *
 	 * @return The amount of time to wait.
 	 */
 	public long getAutoDelay() {
@@ -327,7 +327,7 @@ public class ProtocolConfig {
 	 * Set the amount of time to wait until checking for a new update.
 	 * <p>
 	 * This time must be greater than 59 seconds.
-	 * 
+	 *
 	 * @param delaySeconds - the amount of time to wait.
 	 */
 	public void setAutoDelay(long delaySeconds) {
@@ -340,7 +340,7 @@ public class ProtocolConfig {
 
 	/**
 	 * The version of Minecraft to ignore the built-in safety feature.
-	 * 
+	 *
 	 * @return The version to ignore ProtocolLib's satefy.
 	 */
 	public String getIgnoreVersionCheck() {
@@ -351,7 +351,7 @@ public class ProtocolConfig {
 	 * Sets under which version of Minecraft the version safety feature will be ignored.
 	 * <p>
 	 * This is useful if a server operator has tested and verified that a version of ProtocolLib works, but doesn't want or can't upgrade to a newer version.
-	 * 
+	 *
 	 * @param ignoreVersion - the version of Minecraft where the satefy will be disabled.
 	 */
 	public void setIgnoreVersionCheck(String ignoreVersion) {
@@ -361,7 +361,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve whether or not metrics is enabled.
-	 * 
+	 *
 	 * @return TRUE if metrics is enabled, FALSE otherwise.
 	 */
 	public boolean isMetricsEnabled() {
@@ -372,7 +372,7 @@ public class ProtocolConfig {
 	 * Set whether or not metrics is enabled.
 	 * <p>
 	 * This setting will take effect next time ProtocolLib is started.
-	 * 
+	 *
 	 * @param enabled - whether or not metrics is enabled.
 	 */
 	public void setMetricsEnabled(boolean enabled) {
@@ -382,7 +382,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve whether or not the background compiler for structure modifiers is enabled or not.
-	 * 
+	 *
 	 * @return TRUE if it is enabled, FALSE otherwise.
 	 */
 	public boolean isBackgroundCompilerEnabled() {
@@ -393,7 +393,7 @@ public class ProtocolConfig {
 	 * Set whether or not the background compiler for structure modifiers is enabled or not.
 	 * <p>
 	 * This setting will take effect next time ProtocolLib is started.
-	 * 
+	 *
 	 * @param enabled - TRUE if is enabled/running, FALSE otherwise.
 	 */
 	public void setBackgroundCompilerEnabled(boolean enabled) {
@@ -403,7 +403,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the last time we updated, in seconds since 1970.01.01 00:00.
-	 * 
+	 *
 	 * @return Last update time.
 	 */
 	public long getAutoLastTime() {
@@ -414,7 +414,7 @@ public class ProtocolConfig {
 	 * Set the last time we updated, in seconds since 1970.01.01 00:00.
 	 * <p>
 	 * Note that this is not considered to modify the configuration, so the modification count will not be incremented.
-	 * 
+	 *
 	 * @param lastTimeSeconds - new last update time.
 	 */
 	public void setAutoLastTime(long lastTimeSeconds) {
@@ -424,7 +424,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the unique name of the script engine to use for filtering.
-	 * 
+	 *
 	 * @return Script engine to use.
 	 */
 	public String getScriptEngineName() {
@@ -435,7 +435,7 @@ public class ProtocolConfig {
 	 * Set the unique name of the script engine to use for filtering.
 	 * <p>
 	 * This setting will take effect next time ProtocolLib is started.
-	 * 
+	 *
 	 * @param name - name of the script engine to use.
 	 */
 	public void setScriptEngineName(String name) {
@@ -445,7 +445,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the default injection method.
-	 * 
+	 *
 	 * @return Default method.
 	 */
 	public PlayerInjectHooks getDefaultMethod() {
@@ -454,7 +454,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the injection method that has been set in the configuration, or use a default value.
-	 * 
+	 *
 	 * @return Injection method to use.
 	 * @throws IllegalArgumentException If the configuration option is malformed.
 	 */
@@ -471,7 +471,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Set the starting injection method to use.
-	 * 
+	 *
 	 * @return Injection method.
 	 */
 	public void setInjectionMethod(PlayerInjectHooks hook) {
@@ -481,7 +481,7 @@ public class ProtocolConfig {
 
 	/**
 	 * Retrieve the number of modifications made to this configuration.
-	 * 
+	 *
 	 * @return The number of modifications.
 	 */
 	public int getModificationCount() {

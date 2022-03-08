@@ -19,40 +19,43 @@ package com.comphenix.protocol;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.NetworkMarker;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.injector.netty.WirePacket;
 
+import org.bukkit.entity.Player;
+
 /**
  * Represents a object capable of sending or receiving packets.
- * 
+ *
  * @author Kristian
  */
 public interface PacketStream {
 	/**
 	 * Send a packet to the given player.
+	 *
 	 * @param receiver - the reciever.
 	 * @param packet - packet to send.
 	 * @throws InvocationTargetException - if an error occured when sending the packet.
 	 */
 	public void sendServerPacket(Player receiver, PacketContainer packet)
-			throws InvocationTargetException;
+		throws InvocationTargetException;
 
 	/**
 	 * Send a packet to the given player.
+	 *
 	 * @param receiver - the reciever.
 	 * @param packet - packet to send.
 	 * @param filters - whether or not to invoke any packet filters below {@link ListenerPriority#MONITOR}.
 	 * @throws InvocationTargetException - if an error occured when sending the packet.
 	 */
 	public void sendServerPacket(Player receiver, PacketContainer packet, boolean filters)
-			throws InvocationTargetException;
-	
+		throws InvocationTargetException;
+
 	/**
 	 * Send a packet to the given player.
+	 *
 	 * @param receiver - the receiver.
 	 * @param packet - packet to send.
 	 * @param marker - the network marker to use.
@@ -60,10 +63,11 @@ public interface PacketStream {
 	 * @throws InvocationTargetException - if an error occured when sending the packet.
 	 */
 	public void sendServerPacket(Player receiver, PacketContainer packet, NetworkMarker marker, boolean filters)
-			throws InvocationTargetException;
+		throws InvocationTargetException;
 
 	/**
 	 * Send a wire packet to the given player.
+	 *
 	 * @param receiver - the receiver.
 	 * @param id - packet id.
 	 * @param bytes - packet bytes.
@@ -73,6 +77,7 @@ public interface PacketStream {
 
 	/**
 	 * Send a wire packet to the given player.
+	 *
 	 * @param receiver - the receiver.
 	 * @param packet - packet to send.
 	 * @throws InvocationTargetException if an error occured when sending the packet.
@@ -81,16 +86,18 @@ public interface PacketStream {
 
 	/**
 	 * Simulate recieving a certain packet from a given player.
+	 *
 	 * @param sender - the sender.
 	 * @param packet - the packet that was sent.
 	 * @throws InvocationTargetException If the reflection machinery failed.
 	 * @throws IllegalAccessException If the underlying method caused an error.
 	 */
 	public void recieveClientPacket(Player sender, PacketContainer packet)
-			throws IllegalAccessException, InvocationTargetException;
+		throws IllegalAccessException, InvocationTargetException;
 
 	/**
 	 * Simulate recieving a certain packet from a given player.
+	 *
 	 * @param sender - the sender.
 	 * @param packet - the packet that was sent.
 	 * @param filters - whether or not to invoke any packet filters below {@link ListenerPriority#MONITOR}.
@@ -98,10 +105,11 @@ public interface PacketStream {
 	 * @throws IllegalAccessException If the underlying method caused an error.
 	 */
 	public void recieveClientPacket(Player sender, PacketContainer packet, boolean filters)
-			throws IllegalAccessException, InvocationTargetException;
-	
+		throws IllegalAccessException, InvocationTargetException;
+
 	/**
 	 * Simulate recieving a certain packet from a given player.
+	 *
 	 * @param sender - the sender.
 	 * @param packet - the packet that was sent.
 	 * @param marker - the network marker to use.
@@ -110,5 +118,5 @@ public interface PacketStream {
 	 * @throws IllegalAccessException If the underlying method caused an error.
 	 */
 	public void recieveClientPacket(Player sender, PacketContainer packet, NetworkMarker marker, boolean filters)
-			throws IllegalAccessException, InvocationTargetException;
+		throws IllegalAccessException, InvocationTargetException;
 }

@@ -9,12 +9,13 @@ import org.bukkit.conversations.StringPrompt;
 
 /**
  * Represents a conversation prompt that accepts a list of lines.
- * 
+ *
  * @author Kristian
  */
 class MultipleLinesPrompt extends StringPrompt {
 	/**
 	 * Represents a canceller that determines if the multiple lines prompt is finished.
+	 *
 	 * @author Kristian
 	 */
 	public static interface MultipleConversationCanceller extends ConversationCanceller {
@@ -24,19 +25,20 @@ class MultipleLinesPrompt extends StringPrompt {
 		/**
 		 * Determine if the current prompt is done based on the context, last
 		 * line and collected lines.
-		 * 
+		 *
 		 * @param context - current context.
 		 * @param currentLine - current (last) line.
 		 * @param lines - collected lines.
 		 * @param lineCount - number of lines.
 		 * @return TRUE if we are done, FALSE otherwise.
 		 */
-		public boolean cancelBasedOnInput(ConversationContext context, String currentLine, 
+		public boolean cancelBasedOnInput(ConversationContext context, String currentLine,
 										  StringBuilder lines, int lineCount);
 	}
 
 	/**
 	 * A wrapper class for turning a ConversationCanceller into a MultipleConversationCanceller.
+	 *
 	 * @author Kristian
 	 */
 	private static class MultipleWrapper implements MultipleConversationCanceller {
@@ -45,14 +47,14 @@ class MultipleLinesPrompt extends StringPrompt {
 		public MultipleWrapper(ConversationCanceller canceller) {
 			this.canceller = canceller;
 		}
-		
+
 		@Override
 		public boolean cancelBasedOnInput(ConversationContext context, String currentLine) {
 			return canceller.cancelBasedOnInput(context, currentLine);
 		}
-		
+
 		@Override
-		public boolean cancelBasedOnInput(ConversationContext context, String currentLine, 
+		public boolean cancelBasedOnInput(ConversationContext context, String currentLine,
 										  StringBuilder lines, int lineCount) {
 			return cancelBasedOnInput(context, currentLine);
 		}
@@ -61,7 +63,7 @@ class MultipleLinesPrompt extends StringPrompt {
 		public void setConversation(Conversation conversation) {
 			canceller.setConversation(conversation);
 		}
-		
+
 		@Override
 		public MultipleWrapper clone() {
 			return new MultipleWrapper(canceller.clone());
@@ -78,9 +80,8 @@ class MultipleLinesPrompt extends StringPrompt {
 
 	/**
 	 * Retrieve and remove the current accumulated input.
-	 * 
-	 * @param context
-	 *            - conversation context.
+	 *
+	 * @param context - conversation context.
 	 * @return The accumulated input, or NULL if not found.
 	 */
 	public String removeAccumulatedInput(ConversationContext context) {
@@ -99,7 +100,7 @@ class MultipleLinesPrompt extends StringPrompt {
 	 * Construct a multiple lines input prompt with a specific end marker.
 	 * <p>
 	 * This is usually an empty string.
-	 * 
+	 *
 	 * @param endMarker - the end marker.
 	 */
 	public MultipleLinesPrompt(String endMarker, String initialPrompt) {
@@ -110,6 +111,7 @@ class MultipleLinesPrompt extends StringPrompt {
 	 * Construct a multiple lines input prompt with a specific end marker implementation.
 	 * <p>
 	 * Note: Use {@link #MultipleLinesPrompt(MultipleConversationCanceller, String)} if implementing a custom canceller.
+	 *
 	 * @param endMarker - the end marker.
 	 * @param initialPrompt - the initial prompt text.
 	 */
@@ -117,9 +119,10 @@ class MultipleLinesPrompt extends StringPrompt {
 		this.endMarker = new MultipleWrapper(endMarker);
 		this.initialPrompt = initialPrompt;
 	}
-	
+
 	/**
 	 * Construct a multiple lines input prompt with a specific end marker implementation.
+	 *
 	 * @param endMarker - the end marker.
 	 * @param initialPrompt - the initial prompt text.
 	 */
@@ -132,13 +135,13 @@ class MultipleLinesPrompt extends StringPrompt {
 	public Prompt acceptInput(ConversationContext context, String in) {
 		StringBuilder result = (StringBuilder) context.getSessionData(KEY);
 		Integer count = (Integer) context.getSessionData(KEY_LINES);
-		
+
 		// Handle first run
-		if (result == null) 
+		if (result == null)
 			context.setSessionData(KEY, result = new StringBuilder());
 		if (count == null)
 			count = 0;
-		
+
 		// Save the last line as well
 		context.setSessionData(KEY_LAST, in);
 		context.setSessionData(KEY_LINES, ++count);

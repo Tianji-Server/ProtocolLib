@@ -18,7 +18,11 @@
 package com.comphenix.protocol.injector;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.comphenix.protocol.reflect.FieldAccessException;
@@ -32,8 +36,8 @@ import com.comphenix.protocol.utility.MinecraftFields;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedIntHashMap;
-import com.google.common.collect.Lists;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.Validate;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -52,7 +56,8 @@ class EntityUtilities {
 		return INSTANCE;
 	}
 
-	private EntityUtilities() { }
+	private EntityUtilities() {
+	}
 
 	private FieldAccessor entityTrackerField;
 	private FieldAccessor trackedEntitiesField;
@@ -69,7 +74,7 @@ class EntityUtilities {
 		List<Object> nmsPlayers = unwrapBukkit(observers);
 
 		List<Object> removingEntries = MinecraftVersion.CAVES_CLIFFS_1.atOrAbove() ?
-				getPlayerConnections(nmsPlayers) : nmsPlayers;
+			getPlayerConnections(nmsPlayers) : nmsPlayers;
 
 		trackedPlayers.removeAll(removingEntries);
 
@@ -87,12 +92,13 @@ class EntityUtilities {
 
 		FuzzyReflection fuzzy = FuzzyReflection.fromClass(trackerClass, true);
 		return Accessors.getMethodAccessor(
-				fuzzy.getMethod(
-						FuzzyMethodContract.newBuilder().returnTypeVoid().parameterExactArray(List.class).build()));
+			fuzzy.getMethod(
+				FuzzyMethodContract.newBuilder().returnTypeVoid().parameterExactArray(List.class).build()));
 	}
 
 	/**
 	 * Retrieve every client that is receiving information about a given entity.
+	 *
 	 * @param entity - the entity that is being tracked.
 	 * @return Every client/player that is tracking the given entity.
 	 * @throws FieldAccessException If reflection failed.
@@ -148,8 +154,8 @@ class EntityUtilities {
 		if (getChunkProvider == null) {
 			Class<?> chunkProviderClass = MinecraftReflection.getChunkProviderServer();
 			getChunkProvider = Accessors.getMethodAccessor(
-					FuzzyReflection.fromClass(worldServer.getClass(), false).getMethod(
-							FuzzyMethodContract.newBuilder().parameterCount(0).returnTypeExact(chunkProviderClass).build()));
+				FuzzyReflection.fromClass(worldServer.getClass(), false).getMethod(
+					FuzzyMethodContract.newBuilder().parameterCount(0).returnTypeExact(chunkProviderClass).build()));
 		}
 
 		Object chunkProvider = getChunkProvider.invoke(worldServer);
@@ -157,8 +163,8 @@ class EntityUtilities {
 		if (chunkMapField == null) {
 			Class<?> chunkMapClass = MinecraftReflection.getPlayerChunkMap();
 			chunkMapField = Accessors.getFieldAccessor(
-					FuzzyReflection.fromClass(chunkProvider.getClass(), false).getField(
-							FuzzyFieldContract.newBuilder().typeExact(chunkMapClass).build()));
+				FuzzyReflection.fromClass(chunkProvider.getClass(), false).getField(
+					FuzzyFieldContract.newBuilder().typeExact(chunkMapClass).build()));
 		}
 
 		Object playerChunkMap = chunkMapField.get(chunkProvider);
@@ -177,7 +183,7 @@ class EntityUtilities {
 			} else {
 				trackedEntitiesField = Accessors.getFieldAccessor(
 					FuzzyReflection.fromClass(playerChunkMap.getClass(), false).getField(
-							FuzzyFieldContract.newBuilder().typeDerivedOf(Map.class).nameExact("trackedEntities").build()));
+						FuzzyFieldContract.newBuilder().typeDerivedOf(Map.class).nameExact("trackedEntities").build()));
 			}
 		}
 
@@ -195,7 +201,7 @@ class EntityUtilities {
 
 		if (entityTrackerField == null)
 			entityTrackerField = Accessors.getFieldAccessor(FuzzyReflection.fromObject(worldServer).
-									getFieldByType("tracker", MinecraftReflection.getEntityTrackerClass()));
+				getFieldByType("tracker", MinecraftReflection.getEntityTrackerClass()));
 
 		// Get the tracker
 		Object tracker = entityTrackerField.get(worldServer);
@@ -203,7 +209,7 @@ class EntityUtilities {
 		// Looking for an IntHashMap in the tracker entry
 		if (trackedEntitiesField == null) {
 			trackedEntitiesField = Accessors.getFieldAccessor(FuzzyReflection.fromObject(tracker, false)
-					.getFieldByType("trackedEntities", MinecraftReflection.getIntHashMapClass()));
+				.getFieldByType("trackedEntities", MinecraftReflection.getIntHashMapClass()));
 		}
 
 		// Read the map
@@ -216,6 +222,7 @@ class EntityUtilities {
 
 	/**
 	 * Retrieve entity from a ID, even it it's newly created.
+	 *
 	 * @return The associated entity.
 	 * @throws FieldAccessException Reflection error.
 	 */
@@ -232,9 +239,9 @@ class EntityUtilities {
 				if (getEntityFromId == null) {
 					FuzzyReflection fuzzy = FuzzyReflection.fromClass(worldServer.getClass(), false);
 					getEntityFromId = Accessors.getMethodAccessor(fuzzy.getMethod(FuzzyMethodContract.newBuilder()
-							.parameterExactArray(int.class)
-							.returnTypeExact(MinecraftReflection.getEntityClass())
-							.build()));
+						.parameterExactArray(int.class)
+						.returnTypeExact(MinecraftReflection.getEntityClass())
+						.build()));
 				}
 
 				Object entity = getEntityFromId.invoke(worldServer, entityID);
@@ -253,12 +260,12 @@ class EntityUtilities {
 					// get the first entity field
 					try {
 						return Accessors.getFieldAccessor(FuzzyReflection.fromClass(trackerEntry.getClass(), true)
-								.getField(FuzzyFieldContract.newBuilder().typeExact(MinecraftReflection.getEntityClass()).build()));
+							.getField(FuzzyFieldContract.newBuilder().typeExact(MinecraftReflection.getEntityClass()).build()));
 					} catch (Exception ex) {
 						// try with the default class
 						Class<?> trackerEntryClass = MinecraftReflection.getEntityTrackerClass();
 						return Accessors.getFieldAccessor(FuzzyReflection.fromClass(trackerEntryClass, true)
-								.getField(FuzzyFieldContract.newBuilder().typeExact(MinecraftReflection.getEntityClass()).build()));
+							.getField(FuzzyFieldContract.newBuilder().typeExact(MinecraftReflection.getEntityClass()).build()));
 					}
 				});
 

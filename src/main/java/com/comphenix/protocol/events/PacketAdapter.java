@@ -23,17 +23,18 @@ import javax.annotation.Nonnull;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.injector.GamePhase;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import org.bukkit.plugin.Plugin;
 
 /**
  * Represents a packet listener with useful constructors.
  * <p>
  * Remember to override onPacketReceiving() and onPacketSending(), depending on the ConnectionSide.
+ *
  * @author Kristian
  */
 public abstract class PacketAdapter implements PacketListener {
@@ -44,6 +45,7 @@ public abstract class PacketAdapter implements PacketListener {
 
 	/**
 	 * Initialize a packet adapter using a collection of parameters. Use {@link #params()} to get an instance to this builder.
+	 *
 	 * @param params - the parameters.
 	 */
 	public PacketAdapter(@Nonnull AdapterParameteters params) {
@@ -52,27 +54,30 @@ public abstract class PacketAdapter implements PacketListener {
 			params.gamePhase, params.options, params.packets
 		);
 	}
-	
+
 	/**
 	 * Initialize a packet listener with the given parameters.
+	 *
 	 * @param plugin - the plugin.
 	 * @param types - the packet types.
 	 */
 	public PacketAdapter(Plugin plugin, PacketType... types) {
 		this(plugin, ListenerPriority.NORMAL, types);
 	}
-	
+
 	/**
 	 * Initialize a packet listener with the given parameters.
+	 *
 	 * @param plugin - the plugin.
 	 * @param types - the packet types.
 	 */
 	public PacketAdapter(Plugin plugin, Iterable<? extends PacketType> types) {
 		this(params(plugin, Iterables.toArray(types, PacketType.class)));
 	}
-	
+
 	/**
 	 * Initialize a packet listener with the given parameters.
+	 *
 	 * @param plugin - the plugin.
 	 * @param listenerPriority - the priority.
 	 * @param types - the packet types.
@@ -80,9 +85,10 @@ public abstract class PacketAdapter implements PacketListener {
 	public PacketAdapter(Plugin plugin, ListenerPriority listenerPriority, Iterable<? extends PacketType> types) {
 		this(params(plugin, Iterables.toArray(types, PacketType.class)).listenerPriority(listenerPriority));
 	}
-	
+
 	/**
 	 * Initialize a packet listener with the given parameters.
+	 *
 	 * @param plugin - the plugin.
 	 * @param listenerPriority - the priority.
 	 * @param types - the packet types.
@@ -91,9 +97,10 @@ public abstract class PacketAdapter implements PacketListener {
 	public PacketAdapter(Plugin plugin, ListenerPriority listenerPriority, Iterable<? extends PacketType> types, ListenerOptions... options) {
 		this(params(plugin, Iterables.toArray(types, PacketType.class)).listenerPriority(listenerPriority).options(options));
 	}
-	
+
 	/**
 	 * Initialize a packet listener with the given parameters.
+	 *
 	 * @param plugin - the plugin.
 	 * @param listenerPriority - the priority.
 	 * @param types - the packet types.
@@ -104,9 +111,9 @@ public abstract class PacketAdapter implements PacketListener {
 
 	// For internal use only
 	private PacketAdapter(
-			Plugin plugin, ConnectionSide connectionSide, ListenerPriority listenerPriority,
-			GamePhase gamePhase, ListenerOptions[] options, PacketType... packets) {
-		
+		Plugin plugin, ConnectionSide connectionSide, ListenerPriority listenerPriority,
+		GamePhase gamePhase, ListenerOptions[] options, PacketType... packets) {
+
 		if (plugin == null)
 			throw new IllegalArgumentException("plugin cannot be null");
 		if (connectionSide == null)
@@ -119,16 +126,16 @@ public abstract class PacketAdapter implements PacketListener {
 			throw new IllegalArgumentException("packets cannot be null");
 		if (options == null)
 			throw new IllegalArgumentException("options cannot be null");
-		
+
 		ListenerOptions[] serverOptions = options;
 		ListenerOptions[] clientOptions = options;
-		
+
 		// Special case that allows us to specify optionIntercept().
 		if (connectionSide == ConnectionSide.BOTH) {
 			serverOptions = except(serverOptions, new ListenerOptions[0],
-					ListenerOptions.INTERCEPT_INPUT_BUFFER);
+				ListenerOptions.INTERCEPT_INPUT_BUFFER);
 		}
-		
+
 		// Add whitelists
 		if (connectionSide.isForServer())
 			sendingWhitelist = ListeningWhitelist.newBuilder().
@@ -137,7 +144,7 @@ public abstract class PacketAdapter implements PacketListener {
 				gamePhase(gamePhase).
 				options(serverOptions).
 				build();
-		
+
 		if (connectionSide.isForClient())
 			receivingWhitelist = ListeningWhitelist.newBuilder().
 				priority(listenerPriority).
@@ -145,57 +152,59 @@ public abstract class PacketAdapter implements PacketListener {
 				gamePhase(gamePhase).
 				options(clientOptions).
 				build();
-		
+
 		this.plugin = plugin;
 		this.connectionSide = connectionSide;
 	}
-	
+
 	// Remove a given element from an array
 	private static <T> T[] except(T[] values, T[] buffer, T except) {
 		List<T> result = Lists.newArrayList(values);
-		
+
 		result.remove(except);
 		return result.toArray(buffer);
 	}
-	
+
 	@Override
 	public void onPacketReceiving(PacketEvent event) {
 		// Lets prevent some bugs
 		throw new IllegalStateException("Override onPacketReceiving to get notifcations of received packets!");
 	}
-	
+
 	@Override
 	public void onPacketSending(PacketEvent event) {
 		// Lets prevent some bugs
 		throw new IllegalStateException("Override onPacketSending to get notifcations of sent packets!");
 	}
-	
+
 	@Override
 	public ListeningWhitelist getReceivingWhitelist() {
 		return receivingWhitelist;
 	}
-	
+
 	@Override
 	public ListeningWhitelist getSendingWhitelist() {
 		return sendingWhitelist;
 	}
-	
+
 	@Override
 	public Plugin getPlugin() {
 		return plugin;
 	}
-	
+
 	/**
 	 * Retrieves the name of the plugin that has been associated with the listener.
+	 *
 	 * @param listener - the listener.
 	 * @return Name of the associated plugin.
 	 */
 	public static String getPluginName(PacketListener listener) {
 		return getPluginName(listener.getPlugin());
 	}
-	
+
 	/**
 	 * Retrieves the name of the given plugin.
+	 *
 	 * @param plugin - the plugin.
 	 * @return Name of the given plugin.
 	 */
@@ -209,20 +218,21 @@ public abstract class PacketAdapter implements PacketListener {
 			return plugin.toString();
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		// This is used by the error reporter
 		return String.format("PacketAdapter[plugin=%s, sending=%s, receiving=%s]",
-				getPluginName(this),
-				sendingWhitelist,
-				receivingWhitelist);
+			getPluginName(this),
+			sendingWhitelist,
+			receivingWhitelist);
 	}
-	
+
 	/**
 	 * Construct a helper object for passing parameters to the packet adapter.
 	 * <p>
 	 * This is often simpler and better than passing them directly to each constructor.
+	 *
 	 * @return Helper object.
 	 */
 	public static AdapterParameteters params() {
@@ -233,6 +243,7 @@ public abstract class PacketAdapter implements PacketListener {
 	 * Construct a helper object for passing parameters to the packet adapter.
 	 * <p>
 	 * This is often simpler and better than passing them directly to each constructor.
+	 *
 	 * @param plugin - the plugin that spawned this listener.
 	 * @param packets - the packet types the listener is looking for.
 	 * @return Helper object.
@@ -240,25 +251,27 @@ public abstract class PacketAdapter implements PacketListener {
 	public static AdapterParameteters params(Plugin plugin, PacketType... packets) {
 		return new AdapterParameteters().plugin(plugin).types(packets);
 	}
-	
+
 	/**
 	 * Represents a builder for passing parameters to the packet adapter constructor.
 	 * <p>
 	 * Note: Never make spelling mistakes in a public API!
+	 *
 	 * @author Kristian
 	 */
 	public static class AdapterParameteters {
 		private Plugin plugin;
 		private ConnectionSide connectionSide;
 		private PacketType[] packets;
-	
+
 		// Parameters with default values
 		private GamePhase gamePhase = GamePhase.PLAYING;
 		private ListenerOptions[] options = new ListenerOptions[0];
 		private ListenerPriority listenerPriority = ListenerPriority.NORMAL;
-		
+
 		/**
 		 * Set the plugin that spawned this listener. This parameter is required.
+		 *
 		 * @param plugin - the plugin.
 		 * @return This builder, for chaining.
 		 */
@@ -266,9 +279,10 @@ public abstract class PacketAdapter implements PacketListener {
 			this.plugin = Preconditions.checkNotNull(plugin, "plugin cannot be NULL.");
 			return this;
 		}
-		
+
 		/**
 		 * Set the packet types this listener is looking for. This parameter is required.
+		 *
 		 * @param connectionSide - the new packet type.
 		 * @return This builder, for chaining.
 		 */
@@ -276,27 +290,30 @@ public abstract class PacketAdapter implements PacketListener {
 			this.connectionSide = Preconditions.checkNotNull(connectionSide, "connectionside cannot be NULL.");
 			return this;
 		}
-		
+
 		/**
 		 * Set this adapter to also look for client-side packets.
+		 *
 		 * @return This builder, for chaining.
 		 */
 		public AdapterParameteters clientSide() {
 			return connectionSide(ConnectionSide.add(connectionSide, ConnectionSide.CLIENT_SIDE));
 		}
-		
+
 		/**
 		 * Set this adapter to also look for server-side packets.
+		 *
 		 * @return This builder, for chaining.
 		 */
 		public AdapterParameteters serverSide() {
 			return connectionSide(ConnectionSide.add(connectionSide, ConnectionSide.SERVER_SIDE));
 		}
-		
+
 		/**
 		 * Set the the event priority, where the execution is in ascending order from lowest to highest.
 		 * <p>
 		 * Default is {@link ListenerPriority#NORMAL}.
+		 *
 		 * @param listenerPriority - the new event priority.
 		 * @return This builder, for chaining.
 		 */
@@ -304,11 +321,12 @@ public abstract class PacketAdapter implements PacketListener {
 			this.listenerPriority = Preconditions.checkNotNull(listenerPriority, "listener priority cannot be NULL.");
 			return this;
 		}
-		
+
 		/**
 		 * Set which game phase this listener is active under. This is a hint for ProtocolLib to start intercepting login packets.
 		 * <p>
 		 * Default is {@link GamePhase#PLAYING}, which will not intercept login packets.
+		 *
 		 * @param gamePhase - the new game phase.
 		 * @return This builder, for chaining.
 		 */
@@ -316,19 +334,21 @@ public abstract class PacketAdapter implements PacketListener {
 			this.gamePhase = Preconditions.checkNotNull(gamePhase, "gamePhase cannot be NULL.");
 			return this;
 		}
-		
+
 		/**
 		 * Set the game phase to {@link GamePhase#LOGIN}, allowing ProtocolLib to intercept login packets.
+		 *
 		 * @return This builder, for chaining.
 		 */
 		public AdapterParameteters loginPhase() {
 			return gamePhase(GamePhase.LOGIN);
 		}
-		
+
 		/**
 		 * Set listener options that decide whether or not to intercept the raw packet data as read from the network stream.
 		 * <p>
 		 * The default is to disable this raw packet interception.
+		 *
 		 * @param options - every option to use.
 		 * @return This builder, for chaining.
 		 */
@@ -341,6 +361,7 @@ public abstract class PacketAdapter implements PacketListener {
 		 * Set listener options that decide whether or not to intercept the raw packet data as read from the network stream.
 		 * <p>
 		 * The default is to disable this raw packet interception.
+		 *
 		 * @param options - every option to use.
 		 * @return This builder, for chaining.
 		 */
@@ -349,9 +370,10 @@ public abstract class PacketAdapter implements PacketListener {
 			this.options = options.toArray(new ListenerOptions[0]);
 			return this;
 		}
-		
+
 		/**
 		 * Add a given option to the current builder.
+		 *
 		 * @param option - the option to add.
 		 * @return This builder, for chaining.
 		 */
@@ -364,9 +386,10 @@ public abstract class PacketAdapter implements PacketListener {
 				return options(current);
 			}
 		}
-		
+
 		/**
 		 * Set the listener option to {@link ListenerOptions#INTERCEPT_INPUT_BUFFER}, causing ProtocolLib to read the raw packet data from the network stream.
+		 *
 		 * @return This builder, for chaining.
 		 */
 		public AdapterParameteters optionIntercept() {
@@ -377,6 +400,7 @@ public abstract class PacketAdapter implements PacketListener {
 		 * Set the listener option to {@link ListenerOptions#ASYNC}, indicating that our listener is thread safe.
 		 * <p>
 		 * This allows ProtocolLib to perform certain optimizations.
+		 *
 		 * @return This builder, for chaining.
 		 */
 		public AdapterParameteters optionAsync() {
@@ -387,6 +411,7 @@ public abstract class PacketAdapter implements PacketListener {
 		 * Set the packet types the listener is looking for.
 		 * <p>
 		 * This parameter is required.
+		 *
 		 * @param packets - the packet types to look for.
 		 * @return This builder, for chaining.
 		 */
@@ -398,16 +423,17 @@ public abstract class PacketAdapter implements PacketListener {
 				}
 			}
 			this.packets = Preconditions.checkNotNull(packets, "packets cannot be NULL");
-			
+
 			if (packets.length == 0)
 				throw new IllegalArgumentException("Passed an empty packet type array.");
 			return this;
 		}
-		
+
 		/**
 		 * Set the packet types the listener is looking for.
 		 * <p>
 		 * This parameter is required.
+		 *
 		 * @param packets - a set of packet types to look for.
 		 * @return This builder, for chaining.
 		 */
@@ -415,7 +441,7 @@ public abstract class PacketAdapter implements PacketListener {
 			return types(packets.toArray(new PacketType[0]));
 		}
 	}
-	
+
 	/**
 	 * Determine if the required parameters are set.
 	 */

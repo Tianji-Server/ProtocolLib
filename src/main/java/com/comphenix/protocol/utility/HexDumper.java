@@ -7,11 +7,12 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.PrettyPrinter;
 import com.comphenix.protocol.wrappers.BukkitConverters;
+
 import com.google.common.base.Preconditions;
 
 /**
  * Represents a class for printing hexadecimal dumps.
- * 
+ *
  * @author Kristian
  */
 public class HexDumper {
@@ -29,7 +30,7 @@ public class HexDumper {
 	private int groupLength = 2;
 	private int groupCount = 24;
 	private char[] lineDelimiter = "\n".toCharArray();
-	
+
 	/**
 	 * Retrieve a hex dumper tuned for lines of 80 characters:
 	 * <table border="1">
@@ -63,14 +64,16 @@ public class HexDumper {
 	 *     <td>"\n"</td>
 	 * </tr>
 	 * </table>
+	 *
 	 * @return The default dumper.
 	 */
 	public static HexDumper defaultDumper() {
 		return new HexDumper();
 	}
-	
+
 	/**
 	 * Set the delimiter between each new line.
+	 *
 	 * @param lineDelimiter - the line delimiter.
 	 * @return This instance, for chaining.
 	 */
@@ -81,6 +84,7 @@ public class HexDumper {
 
 	/**
 	 * Set the number of hex characters in the position.
+	 *
 	 * @param positionLength - number of characters, from 0 to 8.
 	 * @return This instance, for chaining.
 	 */
@@ -95,6 +99,7 @@ public class HexDumper {
 
 	/**
 	 * Set a suffix to write after each position.
+	 *
 	 * @param positionSuffix - non-null string to write after the positions.
 	 * @return This instance, for chaining.
 	 */
@@ -105,6 +110,7 @@ public class HexDumper {
 
 	/**
 	 * Set the delimiter to write in between each group of hexadecimal characters.
+	 *
 	 * @param delimiter - non-null string to write between each group.
 	 * @return This instance, for chaining.
 	 */
@@ -115,6 +121,7 @@ public class HexDumper {
 
 	/**
 	 * Set the length of each group in hexadecimal characters.
+	 *
 	 * @param groupLength - the length of each group.
 	 * @return This instance, for chaining.
 	 */
@@ -129,6 +136,7 @@ public class HexDumper {
 	 * Set the number of groups in each line. This is limited by the supply of bytes in the byte array.
 	 * <p>
 	 * Use {@link Integer#MAX_VALUE} to effectively disable lines.
+	 *
 	 * @param groupCount - the count of groups.
 	 * @return This instance, for chaining.
 	 */
@@ -141,6 +149,7 @@ public class HexDumper {
 
 	/**
 	 * Append the hex dump of the given data to the string builder, using the current formatting settings.
+	 *
 	 * @param appendable - appendable source.
 	 * @param data - the data to dump.
 	 * @throws IOException Any underlying IO exception.
@@ -148,9 +157,10 @@ public class HexDumper {
 	public void appendTo(Appendable appendable, byte[] data) throws IOException {
 		appendTo(appendable, data, 0, data.length);
 	}
-	
+
 	/**
 	 * Append the hex dump of the given data to the string builder, using the current formatting settings.
+	 *
 	 * @param appendable - appendable source.
 	 * @param data - the data to dump.
 	 * @param start - the starting index of the data.
@@ -162,72 +172,75 @@ public class HexDumper {
 		appendTo(output, data, start, length);
 		appendable.append(output.toString());
 	}
-	
+
 	/**
 	 * Append the hex dump of the given data to the string builder, using the current formatting settings.
+	 *
 	 * @param builder - the builder.
 	 * @param data - the data to dump.
 	 */
 	public void appendTo(StringBuilder builder, byte[] data) {
 		appendTo(builder, data, 0, data.length);
 	}
-	
+
 	/**
 	 * Append the hex dump of the given data to the string builder, using the current formatting settings.
+	 *
 	 * @param builder - the builder.
 	 * @param data - the data to dump.
 	 * @param start - the starting index of the data.
 	 * @param length - the number of bytes to dump.
 	 */
 	public void appendTo(StringBuilder builder, byte[] data, int start, int length) {
-	    // Positions
-	    int dataIndex = start;
-	    int dataEnd = start + length;
-	    int groupCounter = 0;
-	    int currentGroupLength = 0;
+		// Positions
+		int dataIndex = start;
+		int dataEnd = start + length;
+		int groupCounter = 0;
+		int currentGroupLength = 0;
 
-	    // Current niblet in the byte
-	    int value = 0;
-	    boolean highNiblet = true;
-	    
-	    while (dataIndex < dataEnd || !highNiblet) {
-	    	// Prefix
-	    	if (groupCounter == 0 && currentGroupLength == 0) {
-	    		// Print the current dataIndex (print in reverse)
-	    		for (int i = positionLength - 1; i >= 0; i--) {
-	    			builder.append(HEX_DIGITS[(dataIndex >>> (4 * i)) & 0xF]);
-	    		}
-	    		builder.append(positionSuffix);
-	    	}
-	    	
-	    	// Print niblet
-	        if (highNiblet) {
-	        	value = data[dataIndex++] & 0xFF;
-	        	builder.append(HEX_DIGITS[value >>> 4]);
-	        } else {
-	        	builder.append(HEX_DIGITS[value & 0x0F]);
-	        }
-	        highNiblet = !highNiblet;
-	        currentGroupLength++;
-	        
-	        // See if we're dealing with the last element
-	        if (currentGroupLength >= groupLength) {
-	    		currentGroupLength = 0;
-	    		
-	    		// See if we've reached the last element in the line
-	    		if (++groupCounter >= groupCount) {
-	    			builder.append(lineDelimiter);
-	    			groupCounter = 0;
-	    		} else {
-		    		// Write delimiter
-	    			builder.append(delimiter);
-	    		}
-	        }
-	    }
+		// Current niblet in the byte
+		int value = 0;
+		boolean highNiblet = true;
+
+		while (dataIndex < dataEnd || !highNiblet) {
+			// Prefix
+			if (groupCounter == 0 && currentGroupLength == 0) {
+				// Print the current dataIndex (print in reverse)
+				for (int i = positionLength - 1; i >= 0; i--) {
+					builder.append(HEX_DIGITS[(dataIndex >>> (4 * i)) & 0xF]);
+				}
+				builder.append(positionSuffix);
+			}
+
+			// Print niblet
+			if (highNiblet) {
+				value = data[dataIndex++] & 0xFF;
+				builder.append(HEX_DIGITS[value >>> 4]);
+			} else {
+				builder.append(HEX_DIGITS[value & 0x0F]);
+			}
+			highNiblet = !highNiblet;
+			currentGroupLength++;
+
+			// See if we're dealing with the last element
+			if (currentGroupLength >= groupLength) {
+				currentGroupLength = 0;
+
+				// See if we've reached the last element in the line
+				if (++groupCounter >= groupCount) {
+					builder.append(lineDelimiter);
+					groupCounter = 0;
+				} else {
+					// Write delimiter
+					builder.append(delimiter);
+				}
+			}
+		}
 	}
-	
+
 	/**
 	 * Calculate the length of each line.
+	 *
 	 * @param byteCount - the maximum number of bytes
 	 * @return The lenght of the final line.
 	 */
@@ -241,6 +254,7 @@ public class HexDumper {
 
 	/**
 	 * Retrieve the closest equivalent converter to a specific class.
+	 *
 	 * @param clazz - the class.
 	 * @return The closest converter, or NULL if not found,
 	 */
@@ -260,6 +274,7 @@ public class HexDumper {
 
 	/**
 	 * Retrieve a detailed string representation of the given packet.
+	 *
 	 * @param packetContainer - the packet to describe.
 	 * @return The detailed description.
 	 * @throws IllegalAccessException An error occured.
@@ -270,8 +285,8 @@ public class HexDumper {
 
 		// Get the first Minecraft super class
 		while (clazz != null && clazz != Object.class &&
-				(!MinecraftReflection.isMinecraftClass(clazz) ||
-						ByteBuddyGenerated.class.isAssignableFrom(clazz))) {
+			(!MinecraftReflection.isMinecraftClass(clazz) ||
+				ByteBuddyGenerated.class.isAssignableFrom(clazz))) {
 			clazz = clazz.getSuperclass();
 		}
 

@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
@@ -29,11 +28,10 @@ import com.google.common.collect.Collections2;
 
 /**
  * Represents a map that wraps another map by transforming the entries going in and out.
- * 
- * @author Kristian
  *
  * @param <VInner> - type of the value in the entries in the inner invisible map.
  * @param <VOuter> - type of the value in the entries publically accessible in the outer map.
+ * @author Kristian
  */
 public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverted<VInner, VOuter> implements Map<Key, VOuter> {
 	// Inner map
@@ -46,7 +44,7 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 			return toInner(key, outer);
 		}
 	};
-	
+
 	// Outer conversion
 	private BiFunction<Key, VInner, VOuter> outerConverter = new BiFunction<Key, VInner, VOuter>() {
 		@Override
@@ -54,7 +52,7 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 			return toOuter(key, inner);
 		}
 	};
-	
+
 	public ConvertedMap(Map<Key, VInner> inner) {
 		if (inner == null)
 			throw new IllegalArgumentException("Inner map cannot be NULL.");
@@ -84,6 +82,7 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 
 	/**
 	 * Convert a value from the inner map to the outer visible map.
+	 *
 	 * @param key - unused value.
 	 * @param inner - the inner value.
 	 * @return The outer value.
@@ -91,9 +90,10 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 	protected VOuter toOuter(Key key, VInner inner) {
 		return toOuter(inner);
 	}
-	
+
 	/**
 	 * Convert a value from the outer map to the internal inner map.
+	 *
 	 * @param key - unused value.
 	 * @param outer - the outer value.
 	 * @return The inner value.
@@ -101,7 +101,7 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 	protected VInner toInner(Key key, VOuter outer) {
 		return toInner(outer);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public VOuter get(Object key) {
@@ -151,52 +151,53 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 		});
 	}
 
-    /**
-     * Returns a string representation of this map.  The string representation
-     * consists of a list of key-value mappings in the order returned by the
-     * map's <tt>entrySet</tt> view's iterator, enclosed in braces
-     * (<tt>"{}"</tt>).  Adjacent mappings are separated by the characters
-     * <tt>", "</tt> (comma and space).  Each key-value mapping is rendered as
-     * the key followed by an equals sign (<tt>"="</tt>) followed by the
-     * associated value.  Keys and values are converted to strings as by
-     * {@link String#valueOf(Object)}.
-     *
-     * @return a string representation of this map
-     */
-    @Override
+	/**
+	 * Returns a string representation of this map.  The string representation
+	 * consists of a list of key-value mappings in the order returned by the
+	 * map's <tt>entrySet</tt> view's iterator, enclosed in braces
+	 * (<tt>"{}"</tt>).  Adjacent mappings are separated by the characters
+	 * <tt>", "</tt> (comma and space).  Each key-value mapping is rendered as
+	 * the key followed by an equals sign (<tt>"="</tt>) followed by the
+	 * associated value.  Keys and values are converted to strings as by
+	 * {@link String#valueOf(Object)}.
+	 *
+	 * @return a string representation of this map
+	 */
+	@Override
 	public String toString() {
-        Iterator<Entry<Key, VOuter>> i = entrySet().iterator();
-        if (!i.hasNext())
-            return "{}";
+		Iterator<Entry<Key, VOuter>> i = entrySet().iterator();
+		if (!i.hasNext())
+			return "{}";
 
-        StringBuilder sb = new StringBuilder();
-        sb.append('{');
-        for (;;) {
-            Entry<Key, VOuter> e = i.next();
-            Key key = e.getKey();
-            VOuter value = e.getValue();
-            sb.append(key   == this ? "(this Map)" : key);
-            sb.append('=');
-            sb.append(value == this ? "(this Map)" : value);
-            if (! i.hasNext())
-                return sb.append('}').toString();
-            sb.append(", ");
-        }
-    }
-    
-    /**
-     * Convert a collection of entries.
-     * @param entries - the collection of entries.
-     * @param innerFunction - the inner entry converter.
-     * @param outerFunction - the outer entry converter.
-     * @return The converted set of entries.
-     */
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (; ; ) {
+			Entry<Key, VOuter> e = i.next();
+			Key key = e.getKey();
+			VOuter value = e.getValue();
+			sb.append(key == this ? "(this Map)" : key);
+			sb.append('=');
+			sb.append(value == this ? "(this Map)" : value);
+			if (!i.hasNext())
+				return sb.append('}').toString();
+			sb.append(", ");
+		}
+	}
+
+	/**
+	 * Convert a collection of entries.
+	 *
+	 * @param entries - the collection of entries.
+	 * @param innerFunction - the inner entry converter.
+	 * @param outerFunction - the outer entry converter.
+	 * @return The converted set of entries.
+	 */
 	static <Key, VInner, VOuter> Set<Entry<Key, VOuter>> convertedEntrySet(
-			final Collection<Entry<Key, VInner>> entries,
-			final BiFunction<Key, VOuter, VInner> innerFunction,
-			final BiFunction<Key, VInner, VOuter> outerFunction) {
-		
-		return new ConvertedSet<Entry<Key,VInner>, Entry<Key,VOuter>>(entries) {
+		final Collection<Entry<Key, VInner>> entries,
+		final BiFunction<Key, VOuter, VInner> innerFunction,
+		final BiFunction<Key, VInner, VOuter> outerFunction) {
+
+		return new ConvertedSet<Entry<Key, VInner>, Entry<Key, VOuter>>(entries) {
 			@Override
 			protected Entry<Key, VInner> toInner(final Entry<Key, VOuter> outer) {
 				return new Entry<Key, VInner>() {
@@ -214,14 +215,14 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 					public VInner setValue(VInner value) {
 						return innerFunction.apply(getKey(), outer.setValue(outerFunction.apply(getKey(), value)));
 					}
-					
+
 					@Override
 					public String toString() {
 						return String.format("\"%s\": %s", getKey(), getValue());
 					}
 				};
 			}
-			
+
 			@Override
 			protected Entry<Key, VOuter> toOuter(final Entry<Key, VInner> inner) {
 				return new Entry<Key, VOuter>() {
@@ -240,7 +241,7 @@ public abstract class ConvertedMap<Key, VInner, VOuter> extends AbstractConverte
 						final VInner converted = innerFunction.apply(getKey(), value);
 						return outerFunction.apply(getKey(), inner.setValue(converted));
 					}
-					
+
 					@Override
 					public String toString() {
 						return String.format("\"%s\": %s", getKey(), getValue());

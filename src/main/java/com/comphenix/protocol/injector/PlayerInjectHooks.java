@@ -2,6 +2,7 @@ package com.comphenix.protocol.injector;
 
 /**
  * Sets the inject hook type. Different types allow for maximum compatibility.
+ *
  * @author Kristian
  */
 public enum PlayerInjectHooks {

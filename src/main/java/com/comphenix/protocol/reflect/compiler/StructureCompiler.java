@@ -29,9 +29,15 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.error.Report;
 import com.comphenix.protocol.error.ReportType;
 import com.comphenix.protocol.reflect.StructureModifier;
+
 import com.google.common.base.Objects;
 import com.google.common.primitives.Primitives;
-import net.bytebuddy.jar.asm.*;
+import net.bytebuddy.jar.asm.ClassWriter;
+import net.bytebuddy.jar.asm.FieldVisitor;
+import net.bytebuddy.jar.asm.Label;
+import net.bytebuddy.jar.asm.MethodVisitor;
+import net.bytebuddy.jar.asm.Opcodes;
+import net.bytebuddy.jar.asm.Type;
 
 // public class CompiledStructureModifierPacket20<TField> extends CompiledStructureModifier<TField> {
 //
@@ -120,7 +126,7 @@ public final class StructureCompiler {
 			if (obj instanceof StructureKey) {
 				StructureKey other = (StructureKey) obj;
 				return Objects.equal(targetType, other.targetType) &&
-					   Objects.equal(fieldType, other.fieldType);
+					Objects.equal(fieldType, other.fieldType);
 			}
 			return false;
 		}
@@ -144,7 +150,7 @@ public final class StructureCompiler {
 	// On java 9+ (53.0+) CLassLoader#defineClass(String, byte[], int, int) should not be used anymore.
 	// It will throw warnings and on Java 16+ (60.0+), it does not work at all anymore.
 	private static final boolean LEGACY_CLASS_DEFINITION =
-			Float.parseFloat(System.getProperty("java.class.version")) < 53;
+		Float.parseFloat(System.getProperty("java.class.version")) < 53;
 	/**
 	 * The MethodHandles.Lookup object for this compiler. Only used when using the modern defineClass strategy.
 	 */
@@ -157,6 +163,7 @@ public final class StructureCompiler {
 
 	/**
 	 * Construct a structure compiler.
+	 *
 	 * @param loader - main class loader.
 	 */
 	StructureCompiler(ClassLoader loader) {
@@ -165,6 +172,7 @@ public final class StructureCompiler {
 
 	/**
 	 * Lookup the current class loader for any previously generated classes before we attempt to generate something.
+	 *
 	 * @param <TField> Type
 	 * @param source - the structure modifier to look up.
 	 * @return TRUE if we successfully found a previously generated class, FALSE otherwise.
@@ -177,7 +185,7 @@ public final class StructureCompiler {
 			return true;
 		}
 
-		if (! attemptClassLoad) {
+		if (!attemptClassLoad) {
 			return false;
 		}
 
@@ -206,6 +214,7 @@ public final class StructureCompiler {
 	 * <p>
 	 * WARNING: Do NOT call this method in the main thread. Compiling may easily take 10 ms, which is already
 	 * over 1/4 of a tick (50 ms). Let the background thread automatically compile the structure modifiers instead.
+	 *
 	 * @param <TField> Type
 	 * @param source - structure modifier to compile.
 	 * @return A compiled structure modifier.
@@ -230,7 +239,7 @@ public final class StructureCompiler {
 		try {
 			return (StructureModifier<TField>) compiledClass.getConstructor(
 					StructureModifier.class, StructureCompiler.class).
-					 newInstance(source, this);
+				newInstance(source, this);
 		} catch (OutOfMemoryError e) {
 			// Print the number of generated classes by the current instances
 			ProtocolLibrary.getErrorReporter().reportWarning(
@@ -254,6 +263,7 @@ public final class StructureCompiler {
 
 	/**
 	 * Retrieve a variable identifier that can uniquely represent the given type.
+	 *
 	 * @param type - a type.
 	 * @return A unique and legal identifier for the given type.
 	 */
@@ -263,6 +273,7 @@ public final class StructureCompiler {
 
 	/**
 	 * Retrieve the compiled name of a given structure modifier.
+	 *
 	 * @param source - the structure modifier.
 	 * @return The unique, compiled name of a compiled structure modifier.
 	 */
@@ -271,12 +282,13 @@ public final class StructureCompiler {
 
 		// Concat class and field type
 		return "CompiledStructure$" +
-				getSafeTypeName(targetType) + "$" +
-				getSafeTypeName(source.getFieldType());
+			getSafeTypeName(targetType) + "$" +
+			getSafeTypeName(source.getFieldType());
 	}
 
 	/**
 	 * Compile a structure modifier.
+	 *
 	 * @param source - structure modifier.
 	 * @return The compiled structure modifier.
 	 */
@@ -291,7 +303,7 @@ public final class StructureCompiler {
 
 		// Define class
 		cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, PACKAGE_NAME + "/" + className,
-				 null, COMPILED_CLASS, null);
+			null, COMPILED_CLASS, null);
 
 		createFields(cw, targetSignature);
 		createConstructor(cw, className, targetSignature, targetName);
@@ -309,10 +321,10 @@ public final class StructureCompiler {
 	}
 
 	private Class<?> defineClassLegacy(byte[] data) throws InvocationTargetException, IllegalAccessException,
-			NoSuchMethodException {
+		NoSuchMethodException {
 		if (defineMethod == null) {
 			Method defined = ClassLoader.class.getDeclaredMethod("defineClass",
-					new Class<?>[]{String.class, byte[].class, int.class, int.class});
+				new Class<?>[] { String.class, byte[].class, int.class, int.class });
 
 			// Awesome. Now, create and return it.
 			defined.setAccessible(true);
@@ -322,10 +334,10 @@ public final class StructureCompiler {
 	}
 
 	private Class<?> defineClassModern(byte[] data) throws InvocationTargetException, IllegalAccessException,
-			ClassNotFoundException, NoSuchMethodException {
+		ClassNotFoundException, NoSuchMethodException {
 		if (defineMethod == null) {
 			defineMethod = Class.forName("java.lang.invoke.MethodHandles$Lookup")
-					.getDeclaredMethod("defineClass", byte[].class);
+				.getDeclaredMethod("defineClass", byte[].class);
 		}
 		if (lookupMethod == null) {
 			lookupMethod = Class.forName("java.lang.invoke.MethodHandles").getDeclaredMethod("lookup");
@@ -354,6 +366,7 @@ public final class StructureCompiler {
 
 	/**
 	 * Determine if at least one of the given fields is public.
+	 *
 	 * @param fields - field to test.
 	 * @return TRUE if one or more field is publically accessible, FALSE otherwise.
 	 */
@@ -386,7 +399,7 @@ public final class StructureCompiler {
 		String methodDescriptor = "(ILjava/lang/Object;)L" + SUPER_CLASS + ";";
 		String methodSignature = "(ILjava/lang/Object;)L" + SUPER_CLASS + "<Ljava/lang/Object;>;";
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PROTECTED, "writeGenerated", methodDescriptor, methodSignature,
-									new String[] { FIELD_EXCEPTION_CLASS });
+			new String[] { FIELD_EXCEPTION_CLASS });
 		BoxingHelper boxingHelper = new BoxingHelper(mv);
 
 		String generatedClassName = PACKAGE_NAME + "/" + className;
@@ -472,7 +485,7 @@ public final class StructureCompiler {
 
 	private void createReadMethod(ClassWriter cw, String className, List<Field> fields, String targetSignature, String targetName) {
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PROTECTED, "readGenerated", "(I)Ljava/lang/Object;", null,
-									new String[] { "com/comphenix/protocol/reflect/FieldAccessException" });
+			new String[] { "com/comphenix/protocol/reflect/FieldAccessException" });
 		BoxingHelper boxingHelper = new BoxingHelper(mv);
 
 		String generatedClassName = PACKAGE_NAME + "/" + className;
@@ -543,8 +556,8 @@ public final class StructureCompiler {
 
 	private void createConstructor(ClassWriter cw, String className, String targetSignature, String targetName) {
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>",
-				"(L" + SUPER_CLASS + ";L" + PACKAGE_NAME + "/StructureCompiler;)V",
-				"(L" + SUPER_CLASS + "<Ljava/lang/Object;>;L" + PACKAGE_NAME + "/StructureCompiler;)V", null);
+			"(L" + SUPER_CLASS + ";L" + PACKAGE_NAME + "/StructureCompiler;)V",
+			"(L" + SUPER_CLASS + "<Ljava/lang/Object;>;L" + PACKAGE_NAME + "/StructureCompiler;)V", null);
 		String fullClassName = PACKAGE_NAME + "/" + className;
 
 		mv.visitCode();

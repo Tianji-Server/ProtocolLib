@@ -1,23 +1,20 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.injector.netty;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -29,6 +26,9 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A packet represented only by its id and bytes.
@@ -117,7 +117,7 @@ public class WirePacket {
 		if (obj instanceof WirePacket) {
 			WirePacket that = (WirePacket) obj;
 			return this.id == that.id &&
-					Arrays.equals(this.bytes, that.bytes);
+				Arrays.equals(this.bytes, that.bytes);
 		}
 
 		return false;
@@ -156,16 +156,16 @@ public class WirePacket {
 	/**
 	 * Creates a byte array from an existing PacketContainer containing all the
 	 * bytes from that packet
-	 * 
+	 *
 	 * @param packet Existing packet
 	 * @return the byte array
 	 */
 	public static byte[] bytesFromPacket(PacketContainer packet) {
 		checkNotNull(packet, "packet cannot be null!");
-		
+
 		ByteBuf buffer = PacketContainer.createPacketBuffer();
 		ByteBuf store = PacketContainer.createPacketBuffer();
-		
+
 		// Read the bytes once
 		Method write = MinecraftMethods.getPacketWriteByteBufMethod();
 
@@ -176,12 +176,12 @@ public class WirePacket {
 		}
 
 		byte[] bytes = getBytes(buffer);
-		
+
 		buffer.release();
 
 		// Rewrite them to the packet to avoid issues with certain packets
 		if (packet.getType() == PacketType.Play.Server.CUSTOM_PAYLOAD
-				|| packet.getType() == PacketType.Play.Client.CUSTOM_PAYLOAD) {
+			|| packet.getType() == PacketType.Play.Client.CUSTOM_PAYLOAD) {
 			// Make a copy of the array before writing
 			byte[] ret = Arrays.copyOf(bytes, bytes.length);
 			store.writeBytes(bytes);
@@ -196,7 +196,7 @@ public class WirePacket {
 
 			return ret;
 		}
-		
+
 		store.release();
 
 		return bytes;
@@ -223,9 +223,9 @@ public class WirePacket {
 		} catch (ReflectiveOperationException ex) {
 			throw new RuntimeException("Failed to serialize packet contents.", ex);
 		}
-		
+
 		byte[] bytes = getBytes(buffer);
-		
+
 		buffer.release();
 
 		return new WirePacket(id, bytes);
@@ -245,19 +245,19 @@ public class WirePacket {
 	public static int readVarInt(ByteBuf input) {
 		checkNotNull(input, "input cannot be null!");
 
-        int i = 0;
-        int j = 0;
+		int i = 0;
+		int j = 0;
 
-        byte b0;
+		byte b0;
 
-        do {
-            b0 = input.readByte();
-            i |= (b0 & 127) << j++ * 7;
-            if (j > 5) {
-                throw new RuntimeException("VarInt too big");
-            }
-        } while ((b0 & 128) == 128);
+		do {
+			b0 = input.readByte();
+			i |= (b0 & 127) << j++ * 7;
+			if (j > 5) {
+				throw new RuntimeException("VarInt too big");
+			}
+		} while ((b0 & 128) == 128);
 
-        return i;
+		return i;
 	}
 }

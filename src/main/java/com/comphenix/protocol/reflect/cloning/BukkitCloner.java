@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2012 Kristian S. Stangeland
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.reflect.cloning;
 
@@ -27,15 +27,26 @@ import java.util.function.Supplier;
 import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.*;
+import com.comphenix.protocol.wrappers.AdventureComponentConverter;
+import com.comphenix.protocol.wrappers.BlockPosition;
+import com.comphenix.protocol.wrappers.BukkitConverters;
+import com.comphenix.protocol.wrappers.ChunkPosition;
+import com.comphenix.protocol.wrappers.ClonableWrapper;
+import com.comphenix.protocol.wrappers.ComponentConverter;
+import com.comphenix.protocol.wrappers.MinecraftKey;
+import com.comphenix.protocol.wrappers.WrappedBlockData;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
+import com.comphenix.protocol.wrappers.WrappedVillagerData;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
-import com.google.common.collect.Maps;
 
+import com.google.common.collect.Maps;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
  * Represents an object that can clone a specific list of Bukkit- and Minecraft-related objects.
- * 
+ *
  * @author Kristian
  */
 public class BukkitCloner implements Cloner {
@@ -47,17 +58,19 @@ public class BukkitCloner implements Cloner {
 			if (nmsClass != null) {
 				CLONERS.put(nmsClass, nmsObject -> fromHandle.apply(nmsObject).deepClone().getHandle());
 			}
-		} catch (Throwable ignored) { }
+		} catch (Throwable ignored) {
+		}
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static void fromConverter(Supplier<Class<?>> getClass, EquivalentConverter converter) {
 		try {
 			Class<?> nmsClass = getClass.get();
 			if (nmsClass != null) {
 				CLONERS.put(nmsClass, nmsObject -> converter.getGeneric(converter.getSpecific(nmsObject)));
 			}
-		} catch (Throwable ignored) { }
+		} catch (Throwable ignored) {
+		}
 	}
 
 	private static void fromManual(Supplier<Class<?>> getClass, Function<Object, Object> cloner) {
@@ -66,12 +79,13 @@ public class BukkitCloner implements Cloner {
 			if (nmsClass != null) {
 				CLONERS.put(nmsClass, cloner);
 			}
-		} catch (Throwable ignored) { }
+		} catch (Throwable ignored) {
+		}
 	}
 
 	static {
 		fromManual(MinecraftReflection::getItemStackClass, source ->
-				MinecraftReflection.getMinecraftItemStack(MinecraftReflection.getBukkitItemStack(source).clone()));
+			MinecraftReflection.getMinecraftItemStack(MinecraftReflection.getBukkitItemStack(source).clone()));
 		fromWrapper(MinecraftReflection::getDataWatcherClass, WrappedDataWatcher::new);
 		fromConverter(MinecraftReflection::getBlockPositionClass, BlockPosition.getConverter());
 		fromConverter(MinecraftReflection::getChunkPositionClass, ChunkPosition.getConverter());
@@ -86,13 +100,15 @@ public class BukkitCloner implements Cloner {
 
 		try {
 			fromManual(ComponentConverter::getBaseComponentArrayClass, source ->
-					ComponentConverter.clone((BaseComponent[]) source));
-		} catch (Throwable ignored) { }
+				ComponentConverter.clone((BaseComponent[]) source));
+		} catch (Throwable ignored) {
+		}
 
 		try {
 			fromManual(AdventureComponentConverter::getComponentClass, source ->
-					AdventureComponentConverter.clone(source));
-		} catch (Throwable ignored) { }
+				AdventureComponentConverter.clone(source));
+		} catch (Throwable ignored) {
+		}
 	}
 
 	private Function<Object, Object> findCloner(Class<?> type) {

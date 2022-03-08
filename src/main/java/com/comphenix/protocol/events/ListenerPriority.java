@@ -19,7 +19,7 @@ package com.comphenix.protocol.events;
 
 /**
  * Represents a packet event priority, similar to the Bukkit EventPriority.
- * 
+ *
  * @author Kristian
  */
 public enum ListenerPriority {
@@ -60,6 +60,7 @@ public enum ListenerPriority {
 
 	/**
 	 * A low slot represents a low priority.
+	 *
 	 * @return Integer representation of this priorty.
 	 */
 	public int getSlot() {

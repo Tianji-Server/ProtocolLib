@@ -1,9 +1,10 @@
 package com.comphenix.protocol.reflect.accessors;
 
-import com.comphenix.protocol.ProtocolLogger;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Field;
+
+import com.comphenix.protocol.ProtocolLogger;
 
 final class DefaultFieldAccessor implements FieldAccessor {
 

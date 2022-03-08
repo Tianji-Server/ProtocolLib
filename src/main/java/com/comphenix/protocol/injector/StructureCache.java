@@ -19,15 +19,15 @@ package com.comphenix.protocol.injector;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.injector.packet.PacketRegistry;
+import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.ConstructorAccessor;
-import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.reflect.compiler.BackgroundCompiler;
 import com.comphenix.protocol.reflect.compiler.CompiledStructureModifier;
 import com.comphenix.protocol.reflect.instances.DefaultInstances;
@@ -36,15 +36,15 @@ import com.comphenix.protocol.utility.MinecraftMethods;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.ZeroBuffer;
 
-import io.netty.buffer.ByteBuf;
 import com.google.common.base.Preconditions;
-
+import io.netty.buffer.ByteBuf;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.matcher.ElementMatchers;
 
 /**
  * Caches structure modifiers.
+ *
  * @author Kristian
  */
 public class StructureCache {
@@ -88,6 +88,7 @@ public class StructureCache {
 
 	/**
 	 * Creates an empty Minecraft packet of the given type.
+	 *
 	 * @param type - packet type.
 	 * @return Created packet.
 	 */
@@ -97,6 +98,7 @@ public class StructureCache {
 
 	/**
 	 * Retrieve a cached structure modifier for the given packet type.
+	 *
 	 * @param type - packet type.
 	 * @return A structure modifier.
 	 */
@@ -107,6 +109,7 @@ public class StructureCache {
 
 	/**
 	 * Retrieve a cached structure modifier given a packet type.
+	 *
 	 * @param packetType - packet type.
 	 * @return A structure modifier.
 	 */
@@ -117,6 +120,7 @@ public class StructureCache {
 
 	/**
 	 * Retrieve a cached structure modifier given a packet type.
+	 *
 	 * @param packetType - packet type.
 	 * @param compile - whether or not to asynchronously compile the structure modifier.
 	 * @return A structure modifier.
@@ -130,6 +134,7 @@ public class StructureCache {
 
 	/**
 	 * Retrieve a cached structure modifier for the given packet type.
+	 *
 	 * @param type - packet type.
 	 * @param compile - whether or not to asynchronously compile the structure modifier.
 	 * @return A structure modifier.
@@ -142,7 +147,7 @@ public class StructureCache {
 		if (result == null) {
 			// Use the vanilla class definition
 			final StructureModifier<Object> value = new StructureModifier<>(
-					PacketRegistry.getPacketClassFromType(type), MinecraftReflection.getPacketClass(), true);
+				PacketRegistry.getPacketClassFromType(type), MinecraftReflection.getPacketClass(), true);
 
 			result = structureModifiers.putIfAbsent(type, value);
 
@@ -160,7 +165,7 @@ public class StructureCache {
 
 				if (!compiling.contains(type) && compiler != null) {
 					compiler.scheduleCompilation(result,
-							compiledModifier -> structureModifiers.put(type, compiledModifier));
+						compiledModifier -> structureModifiers.put(type, compiledModifier));
 					compiling.add(type);
 				}
 			}
@@ -171,6 +176,7 @@ public class StructureCache {
 	/**
 	 * Creates a packet data serializer sub-class if needed to allow the fixed read of a NbtTagCompound because of a null
 	 * check in the MapChunk packet constructor.
+	 *
 	 * @return an accessor to a constructor which creates a data serializer.
 	 */
 	private static ConstructorAccessor getTrickDataSerializerOrNull() {
@@ -182,14 +188,14 @@ public class StructureCache {
 				Object compound = Accessors.getConstructorAccessor(MinecraftReflection.getNBTCompoundClass()).invoke();
 				// create the method in the class to read an empty nbt tag compound (currently used for MAP_CHUNK because of null check)
 				Class<?> generatedClass = ByteBuddyFactory.getInstance()
-						.createSubclass(MinecraftReflection.getPacketDataSerializerClass())
-						.name(MinecraftMethods.class.getPackage().getName() + ".ProtocolLibTricksNmsDataSerializer")
-						.method(ElementMatchers.returns(MinecraftReflection.getNBTCompoundClass())
-								.and(ElementMatchers.takesArguments(MinecraftReflection.getNBTReadLimiterClass())))
-						.intercept(FixedValue.value(compound))
-						.make()
-						.load(ByteBuddyFactory.getInstance().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
-						.getLoaded();
+					.createSubclass(MinecraftReflection.getPacketDataSerializerClass())
+					.name(MinecraftMethods.class.getPackage().getName() + ".ProtocolLibTricksNmsDataSerializer")
+					.method(ElementMatchers.returns(MinecraftReflection.getNBTCompoundClass())
+						.and(ElementMatchers.takesArguments(MinecraftReflection.getNBTReadLimiterClass())))
+					.intercept(FixedValue.value(compound))
+					.make()
+					.load(ByteBuddyFactory.getInstance().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+					.getLoaded();
 				TRICKED_DATA_SERIALIZER = Accessors.getConstructorAccessor(generatedClass, ByteBuf.class);
 			} catch (Exception ignored) {
 				// can happen if unsupported

@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import com.google.common.base.Joiner;
@@ -16,11 +15,11 @@ import com.google.common.collect.Multiset;
 
 /**
  * Represents a multimap that wraps another multimap by transforming the entries that are going in and out.
- * @author Kristian
  *
  * @param <Key> - the key.
  * @param <VInner> - the inner value type.
  * @param <VOuter> - the outer value type.
+ * @author Kristian
  */
 public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractConverted<VInner, VOuter> implements Multimap<Key, VOuter> {
 	// Inner multimap
@@ -29,9 +28,10 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 	public ConvertedMultimap(Multimap<Key, VInner> inner) {
 		this.inner = Preconditions.checkNotNull(inner, "inner map cannot be NULL.");
 	}
-	
+
 	/**
 	 * Wrap a given collection.
+	 *
 	 * @param inner - the inner collection.
 	 * @return The outer collection.
 	 */
@@ -41,21 +41,22 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 			protected VInner toInner(VOuter outer) {
 				return ConvertedMultimap.this.toInner(outer);
 			}
-			
+
 			@Override
 			protected VOuter toOuter(VInner inner) {
 				return ConvertedMultimap.this.toOuter(inner);
 			}
-			
+
 			@Override
 			public String toString() {
 				return "[" + Joiner.on(", ").join(this) + "]";
 			}
 		};
 	}
-	
+
 	/**
 	 * Wrap a given collection.
+	 *
 	 * @param outer - the outer collection.
 	 * @return The inner collection.
 	 */
@@ -65,12 +66,12 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 			protected VOuter toInner(VInner outer) {
 				return ConvertedMultimap.this.toOuter(outer);
 			}
-			
+
 			@Override
 			protected VInner toOuter(VOuter inner) {
 				return ConvertedMultimap.this.toInner(inner);
 			}
-			
+
 			@Override
 			public String toString() {
 				return "[" + Joiner.on(", ").join(this) + "]";
@@ -80,6 +81,7 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 
 	/**
 	 * Convert to an inner object if its of the correct type, otherwise leave it.
+	 *
 	 * @param outer - the outer object.
 	 * @return The inner object, or the same object.
 	 */
@@ -87,7 +89,7 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 	protected Object toInnerObject(Object outer) {
 		return toInner((VOuter) outer);
 	}
-	
+
 	@Override
 	public int size() {
 		return inner.size();
@@ -128,7 +130,7 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 		return inner.putAll(key, Iterables.transform(values, getInnerConverter()));
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public boolean putAll(Multimap<? extends Key, ? extends VOuter> multimap) {
 		return inner.putAll(new ConvertedMultimap<Key, VOuter, VInner>((Multimap) multimap) {
@@ -136,7 +138,7 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 			protected VOuter toInner(VInner outer) {
 				return ConvertedMultimap.this.toOuter(outer);
 			}
-						
+
 			@Override
 			protected VInner toOuter(VOuter inner) {
 				return ConvertedMultimap.this.toInner(inner);
@@ -183,7 +185,7 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 
 	@Override
 	public Collection<Entry<Key, VOuter>> entries() {
-		return ConvertedMap.convertedEntrySet(inner.entries(), 
+		return ConvertedMap.convertedEntrySet(inner.entries(),
 			new BiFunction<Key, VOuter, VInner>() {
 				public VInner apply(Key key, VOuter outer) {
 					return toInner(outer);
@@ -204,43 +206,43 @@ public abstract class ConvertedMultimap<Key, VInner, VOuter> extends AbstractCon
 			protected Collection<VInner> toInner(Collection<VOuter> outer) {
 				return toInnerCollection(outer);
 			}
-			
+
 			@Override
 			protected Collection<VOuter> toOuter(Collection<VInner> inner) {
 				return toOuterCollection(inner);
 			}
 		};
 	}
-	
-    /**
-     * Returns a string representation of this map.  The string representation
-     * consists of a list of key-value mappings in the order returned by the
-     * map's <tt>entrySet</tt> view's iterator, enclosed in braces
-     * (<tt>"{}"</tt>).  Adjacent mappings are separated by the characters
-     * <tt>", "</tt> (comma and space).  Each key-value mapping is rendered as
-     * the key followed by an equals sign (<tt>"="</tt>) followed by the
-     * associated value.  Keys and values are converted to strings as by
-     * {@link String#valueOf(Object)}.
-     *
-     * @return a string representation of this map
-     */
-    public String toString() {
-        Iterator<Entry<Key, VOuter>> i = entries().iterator();
-        if (!i.hasNext())
-            return "{}";
 
-        StringBuilder sb = new StringBuilder();
-        sb.append('{');
-        for (;;) {
-            Entry<Key, VOuter> e = i.next();
-            Key key = e.getKey();
-            VOuter value = e.getValue();
-            sb.append(key   == this ? "(this Map)" : key);
-            sb.append('=');
-            sb.append(value == this ? "(this Map)" : value);
-            if (! i.hasNext())
-                return sb.append('}').toString();
-            sb.append(", ");
-        }
-    }
+	/**
+	 * Returns a string representation of this map.  The string representation
+	 * consists of a list of key-value mappings in the order returned by the
+	 * map's <tt>entrySet</tt> view's iterator, enclosed in braces
+	 * (<tt>"{}"</tt>).  Adjacent mappings are separated by the characters
+	 * <tt>", "</tt> (comma and space).  Each key-value mapping is rendered as
+	 * the key followed by an equals sign (<tt>"="</tt>) followed by the
+	 * associated value.  Keys and values are converted to strings as by
+	 * {@link String#valueOf(Object)}.
+	 *
+	 * @return a string representation of this map
+	 */
+	public String toString() {
+		Iterator<Entry<Key, VOuter>> i = entries().iterator();
+		if (!i.hasNext())
+			return "{}";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (; ; ) {
+			Entry<Key, VOuter> e = i.next();
+			Key key = e.getKey();
+			VOuter value = e.getValue();
+			sb.append(key == this ? "(this Map)" : key);
+			sb.append('=');
+			sb.append(value == this ? "(this Map)" : value);
+			if (!i.hasNext())
+				return sb.append('}').toString();
+			sb.append(", ");
+		}
+	}
 }

@@ -15,8 +15,6 @@ import com.comphenix.protocol.reflect.fuzzy.FuzzyMethodContract;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-
-import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.Origin;
@@ -26,25 +24,26 @@ import net.bytebuddy.matcher.ElementMatchers;
 
 /**
  * Static methods for accessing Minecraft methods.
- * 
+ *
  * @author Kristian
  */
 public class MinecraftMethods {
 	// For player connection
 	private volatile static Method sendPacketMethod;
-	
+
 	// For network manager
 	private volatile static Method networkManagerHandle;
 	private volatile static Method networkManagerPacketRead;
-	
+
 	// For packet
 	private volatile static Method packetReadByteBuf;
 	private volatile static Method packetWriteByteBuf;
 
 	private static Constructor<?> proxyConstructor;
-	
+
 	/**
 	 * Retrieve the send packet method in PlayerConnection/NetServerHandler.
+	 *
 	 * @return The send packet method.
 	 */
 	public static Method getSendPacketMethod() {
@@ -53,12 +52,12 @@ public class MinecraftMethods {
 
 			try {
 				sendPacketMethod = FuzzyReflection
-						.fromClass(serverHandlerClass)
-						.getMethod(FuzzyMethodContract.newBuilder()
-								.nameRegex("sendPacket.*")
-								.returnTypeVoid()
-								.parameterCount(1)
-								.build());
+					.fromClass(serverHandlerClass)
+					.getMethod(FuzzyMethodContract.newBuilder()
+						.nameRegex("sendPacket.*")
+						.returnTypeVoid()
+						.parameterCount(1)
+						.build());
 			} catch (IllegalArgumentException e) {
 				// We can't use the method below on Netty
 				if (MinecraftReflection.isUsingNetty()) {
@@ -66,19 +65,19 @@ public class MinecraftMethods {
 						getMethodByParameters("sendPacket", MinecraftReflection.getPacketClass());
 					return sendPacketMethod;
 				}
-				
+
 				Map<String, Method> netServer = getMethodList(
-						serverHandlerClass, MinecraftReflection.getPacketClass());
+					serverHandlerClass, MinecraftReflection.getPacketClass());
 				Map<String, Method> netHandler = getMethodList(
-						MinecraftReflection.getNetHandlerClass(), MinecraftReflection.getPacketClass());
-				
+					MinecraftReflection.getNetHandlerClass(), MinecraftReflection.getPacketClass());
+
 				// Remove every method in net handler from net server
 				for (String methodName : netHandler.keySet()) {
 					netServer.remove(methodName);
 				}
-				
+
 				// The remainder is the send packet method
-				if (netServer.size() ==  1) {
+				if (netServer.size() == 1) {
 					Method[] methods = netServer.values().toArray(new Method[0]);
 					sendPacketMethod = methods[0];
 				} else {
@@ -88,9 +87,10 @@ public class MinecraftMethods {
 		}
 		return sendPacketMethod;
 	}
-	
+
 	/**
 	 * Retrieve the disconnect method for a given player connection.
+	 *
 	 * @param playerConnection - the player connection.
 	 * @return The
 	 */
@@ -102,39 +102,41 @@ public class MinecraftMethods {
 			return FuzzyReflection.fromObject(playerConnection).getMethodByParameters("disconnect", String.class);
 		}
 	}
-	
+
 	/**
 	 * Retrieve the handle/send packet method of network manager.
 	 * <p>
 	 * This only exists in version 1.7.2 and above.
+	 *
 	 * @return The handle method.
 	 */
 	public static Method getNetworkManagerHandleMethod() {
 		if (networkManagerHandle == null) {
 			networkManagerHandle = FuzzyReflection
-					.fromClass(MinecraftReflection.getNetworkManagerClass(), true)
-					.getMethod(FuzzyMethodContract.newBuilder()
-							.banModifier(Modifier.STATIC)
-							.returnTypeVoid()
-							.parameterCount(1)
-							.parameterExactType(MinecraftReflection.getPacketClass())
-							.build());
+				.fromClass(MinecraftReflection.getNetworkManagerClass(), true)
+				.getMethod(FuzzyMethodContract.newBuilder()
+					.banModifier(Modifier.STATIC)
+					.returnTypeVoid()
+					.parameterCount(1)
+					.parameterExactType(MinecraftReflection.getPacketClass())
+					.build());
 			networkManagerHandle.setAccessible(true);
 		}
 
 		return networkManagerHandle;
 	}
-	
+
 	/**
 	 * Retrieve the packetRead(ChannelHandlerContext, Packet) method of NetworkManager.
 	 * <p>
 	 * This only exists in version 1.7.2 and above.
+	 *
 	 * @return The packetRead method.
 	 */
 	public static Method getNetworkManagerReadPacketMethod() {
 		if (networkManagerPacketRead == null) {
 			networkManagerPacketRead = FuzzyReflection.fromClass(MinecraftReflection.getNetworkManagerClass(), true).
-					getMethodByParameters("packetRead", ChannelHandlerContext.class, MinecraftReflection.getPacketClass());
+				getMethodByParameters("packetRead", ChannelHandlerContext.class, MinecraftReflection.getPacketClass());
 			networkManagerPacketRead.setAccessible(true);
 		}
 		return networkManagerPacketRead;
@@ -142,13 +144,14 @@ public class MinecraftMethods {
 
 	/**
 	 * Retrieve a method mapped list of every method with the given signature.
+	 *
 	 * @param source - class source.
 	 * @param params - parameters.
 	 * @return Method mapped list.
 	 */
 	private static Map<String, Method> getMethodList(Class<?> source, Class<?>... params) {
 		FuzzyReflection reflect = FuzzyReflection.fromClass(source, true);
-		
+
 		return reflect.getMappedMethods(
 			reflect.getMethodListByParameters(Void.TYPE, params)
 		);
@@ -158,48 +161,49 @@ public class MinecraftMethods {
 	 * Retrieve the Packet.read(PacketDataSerializer) method.
 	 * <p>
 	 * This only exists in version 1.7.2 and above.
+	 *
 	 * @return The packet read method.
 	 */
-	public static Method getPacketReadByteBufMethod()  {
+	public static Method getPacketReadByteBufMethod() {
 		initializePacket();
 		return packetReadByteBuf;
 	}
-	
+
 	/**
 	 * Retrieve the Packet.write(PacketDataSerializer) method.
 	 * <p>
 	 * This only exists in version 1.7.2 and above.
+	 *
 	 * @return The packet write method.
 	 */
-	public static Method getPacketWriteByteBufMethod()  {
+	public static Method getPacketWriteByteBufMethod() {
 		initializePacket();
 		return packetWriteByteBuf;
 	}
 
-	private static Constructor<?> setupProxyConstructor()
-	{
+	private static Constructor<?> setupProxyConstructor() {
 		try {
 			return ByteBuddyFactory.getInstance()
-					.createSubclass(MinecraftReflection.getPacketDataSerializerClass())
-					.name(MinecraftMethods.class.getPackage().getName() + ".PacketDecorator")
-					.method(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)))
-					.intercept(MethodDelegation.to(new Object() {
-						@RuntimeType
-						public Object delegate(@SuperCall Callable<?> zuper, @Origin Method method) throws Exception {
-							if (method.getName().contains("read")) {
-								throw new ReadMethodException();
-							}
-
-							if (method.getName().contains("write")) {
-								throw new WriteMethodException();
-							}
-							return zuper.call();
+				.createSubclass(MinecraftReflection.getPacketDataSerializerClass())
+				.name(MinecraftMethods.class.getPackage().getName() + ".PacketDecorator")
+				.method(ElementMatchers.not(ElementMatchers.isDeclaredBy(Object.class)))
+				.intercept(MethodDelegation.to(new Object() {
+					@RuntimeType
+					public Object delegate(@SuperCall Callable<?> zuper, @Origin Method method) throws Exception {
+						if (method.getName().contains("read")) {
+							throw new ReadMethodException();
 						}
-					}))
-					.make()
-					.load(ByteBuddyFactory.getInstance().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
-					.getLoaded()
-					.getDeclaredConstructor(MinecraftReflection.getByteBufClass());
+
+						if (method.getName().contains("write")) {
+							throw new WriteMethodException();
+						}
+						return zuper.call();
+					}
+				}))
+				.make()
+				.load(ByteBuddyFactory.getInstance().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+				.getLoaded()
+				.getDeclaredConstructor(MinecraftReflection.getByteBufClass());
 		} catch (NoSuchMethodException e) {
 			throw new RuntimeException("Failed to find constructor!", e);
 		}
@@ -228,7 +232,7 @@ public class MinecraftMethods {
 
 			final Object lookPacket = new PacketContainer(PacketType.Play.Client.CLOSE_WINDOW).getHandle();
 			final List<Method> candidates = FuzzyReflection.fromClass(MinecraftReflection.getPacketClass())
-					.getMethodListByParameters(Void.TYPE, new Class<?>[] { MinecraftReflection.getPacketDataSerializerClass() });
+				.getMethodListByParameters(Void.TYPE, new Class<?>[] { MinecraftReflection.getPacketDataSerializerClass() });
 
 			// Look through all the methods
 			for (Method method : candidates) {
@@ -254,9 +258,10 @@ public class MinecraftMethods {
 				throw new IllegalStateException("Unable to find Packet.write(PacketDataSerializer)");
 		}
 	}
-	
+
 	/**
 	 * An internal exception used to detect read methods.
+	 *
 	 * @author Kristian
 	 */
 	private static class ReadMethodException extends RuntimeException {
@@ -266,14 +271,15 @@ public class MinecraftMethods {
 			super("A read method was executed.");
 		}
 	}
-	
+
 	/**
 	 * An internal exception used to detect write methods.
+	 *
 	 * @author Kristian
 	 */
 	private static class WriteMethodException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
-		
+
 		public WriteMethodException() {
 			super("A write method was executed.");
 		}

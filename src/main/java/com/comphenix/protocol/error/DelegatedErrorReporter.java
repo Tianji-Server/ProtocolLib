@@ -1,11 +1,12 @@
 package com.comphenix.protocol.error;
 
-import org.bukkit.plugin.Plugin;
-
 import com.comphenix.protocol.error.Report.ReportBuilder;
+
+import org.bukkit.plugin.Plugin;
 
 /**
  * Construct an error reporter that delegates to another error reporter.
+ *
  * @author Kristian
  */
 public class DelegatedErrorReporter implements ErrorReporter {
@@ -13,14 +14,16 @@ public class DelegatedErrorReporter implements ErrorReporter {
 
 	/**
 	 * Construct a new error reporter that forwards all reports to a given reporter.
+	 *
 	 * @param delegated - the delegated reporter.
 	 */
 	public DelegatedErrorReporter(ErrorReporter delegated) {
 		this.delegated = delegated;
 	}
-	
+
 	/**
 	 * Retrieve the underlying error reporter.
+	 *
 	 * @return Underlying error reporter.
 	 */
 	public ErrorReporter getDelegated() {
@@ -40,16 +43,16 @@ public class DelegatedErrorReporter implements ErrorReporter {
 	@Override
 	public void reportDebug(Object sender, Report report) {
 		Report transformed = filterReport(sender, report, false);
-		
+
 		if (transformed != null) {
 			delegated.reportDebug(sender, transformed);
 		}
 	}
-	
+
 	@Override
 	public void reportWarning(Object sender, Report report) {
 		Report transformed = filterReport(sender, report, false);
-		
+
 		if (transformed != null) {
 			delegated.reportWarning(sender, transformed);
 		}
@@ -58,7 +61,7 @@ public class DelegatedErrorReporter implements ErrorReporter {
 	@Override
 	public void reportDetailed(Object sender, Report report) {
 		Report transformed = filterReport(sender, report, true);
-		
+
 		if (transformed != null) {
 			delegated.reportDetailed(sender, transformed);
 		}
@@ -68,6 +71,7 @@ public class DelegatedErrorReporter implements ErrorReporter {
 	 * Invoked before an error report is passed on to the underlying error reporter.
 	 * <p>
 	 * To cancel a report, return NULL.
+	 *
 	 * @param sender - the sender instance or class.
 	 * @param report - the error report.
 	 * @param detailed - whether or not the report will be displayed in detail.
@@ -76,17 +80,17 @@ public class DelegatedErrorReporter implements ErrorReporter {
 	protected Report filterReport(Object sender, Report report, boolean detailed) {
 		return report;
 	}
-	
+
 	@Override
 	public void reportWarning(Object sender, ReportBuilder reportBuilder) {
 		reportWarning(sender, reportBuilder.build());
 	}
-	
+
 	@Override
 	public void reportDetailed(Object sender, ReportBuilder reportBuilder) {
 		reportDetailed(sender, reportBuilder.build());
 	}
-	
+
 	@Override
 	public void reportDebug(Object sender, ReportBuilder builder) {
 		reportDebug(sender, builder.build());

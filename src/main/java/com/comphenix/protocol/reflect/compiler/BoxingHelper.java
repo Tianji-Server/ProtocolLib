@@ -2,16 +2,16 @@
  *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
  *  Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the 
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of 
+ *  This program is free software; you can redistribute it and/or modify it under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation; either version 2 of
  *  the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *  See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program; 
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
+ *  You should have received a copy of the GNU General Public License along with this program;
+ *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307 USA
  */
 
@@ -45,28 +45,28 @@ class BoxingHelper {
 	private final static MethodDescriptor DOUBLE_VALUE = MethodDescriptor.getMethod("double doubleValue()");
 
 	private MethodVisitor mv;
-	
+
 	public BoxingHelper(MethodVisitor mv) {
 		this.mv = mv;
 	}
-	
+
 	/**
 	 * Generates the instructions to box the top stack value. This value is
 	 * replaced by its boxed equivalent on top of the stack.
 	 *
 	 * @param type the Type of the top stack value.
 	 */
-	public void box(final Type type){
-		if(type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
+	public void box(final Type type) {
+		if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
 			return;
 		}
-		
-		if(type == Type.VOID_TYPE) {
+
+		if (type == Type.VOID_TYPE) {
 			push((String) null);
 		} else {
 			Type boxed = type;
-			
-			switch(type.getSort()) {
+
+			switch (type.getSort()) {
 				case Type.BYTE:
 					boxed = BYTE_Type;
 					break;
@@ -92,9 +92,9 @@ class BoxingHelper {
 					boxed = DOUBLE_Type;
 					break;
 			}
-			
+
 			newInstance(boxed);
-			if(type.getSize() == 2) {
+			if (type.getSize() == 2) {
 				// Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
 				dupX2();
 				dupX2();
@@ -104,61 +104,61 @@ class BoxingHelper {
 				dupX1();
 				swap();
 			}
-			
-			invokeConstructor(boxed, new MethodDescriptor("<init>", Type.VOID_TYPE, new Type[] {type}));
+
+			invokeConstructor(boxed, new MethodDescriptor("<init>", Type.VOID_TYPE, new Type[] { type }));
 		}
 	}
-	
+
 	/**
 	 * Generates the instruction to invoke a constructor.
 	 *
-	 * @param Type   the class in which the constructor is defined.
+	 * @param Type the class in which the constructor is defined.
 	 * @param method the constructor to be invoked.
 	 */
-	public void invokeConstructor(final Type Type, final MethodDescriptor method){
+	public void invokeConstructor(final Type Type, final MethodDescriptor method) {
 		invokeInsn(Opcodes.INVOKESPECIAL, Type, method);
 	}
-	
+
 	/**
 	 * Generates a DUP_X1 instruction.
 	 */
-	public void dupX1(){
+	public void dupX1() {
 		mv.visitInsn(Opcodes.DUP_X1);
 	}
 
 	/**
 	 * Generates a DUP_X2 instruction.
 	 */
-	public void dupX2(){
+	public void dupX2() {
 		mv.visitInsn(Opcodes.DUP_X2);
 	}
-	
+
 	/**
 	 * Generates a POP instruction.
 	 */
-	public void pop(){
+	public void pop() {
 		mv.visitInsn(Opcodes.POP);
 	}
 
 	/**
 	 * Generates a SWAP instruction.
 	 */
-	public void swap(){
+	public void swap() {
 		mv.visitInsn(Opcodes.SWAP);
 	}
-	
+
 	/**
 	 * Generates the instruction to push the given value on the stack.
 	 *
 	 * @param value the value to be pushed on the stack.
 	 */
-	public void push(final boolean value){
+	public void push(final boolean value) {
 		push(value ? 1 : 0);
 	}
-	
+
 	/**
 	 * Generates the instruction to push the given value on the stack.
-	 * 
+	 *
 	 * @param value the value to be pushed on the stack.
 	 */
 	public void push(final int value) {
@@ -178,13 +178,13 @@ class BoxingHelper {
 	 *
 	 * @param Type the class of the object to be created.
 	 */
-	public void newInstance(final Type Type){
+	public void newInstance(final Type Type) {
 		TypeInsn(Opcodes.NEW, Type);
 	}
-	
+
 	/**
 	 * Generates the instruction to push the given value on the stack.
-	 * 
+	 *
 	 * @param value the value to be pushed on the stack. May be <tt>null</tt>.
 	 */
 	public void push(final String value) {
@@ -198,15 +198,14 @@ class BoxingHelper {
 	/**
 	 * Generates the instructions to unbox the top stack value. This value is
 	 * replaced by its unboxed equivalent on top of the stack.
-	 * 
-	 * @param type
-	 *            the Type of the top stack value.
+	 *
+	 * @param type the Type of the top stack value.
 	 */
-	public void unbox(final Type type){
+	public void unbox(final Type type) {
 		Type t = NUMBER_Type;
 		MethodDescriptor sig = null;
-		
-		switch(type.getSort()) {
+
+		switch (type.getSort()) {
 			case Type.VOID:
 				return;
 			case Type.CHAR:
@@ -230,9 +229,9 @@ class BoxingHelper {
 			case Type.SHORT:
 			case Type.BYTE:
 				sig = INT_VALUE;
-			}
-		
-		if(sig == null) {
+		}
+
+		if (sig == null) {
 			checkCast(type);
 		} else {
 			checkCast(t);
@@ -246,49 +245,49 @@ class BoxingHelper {
 	 *
 	 * @param Type a class or interface Type.
 	 */
-	public void checkCast(final Type Type){
-		if(!Type.equals(OBJECT_Type)) {
+	public void checkCast(final Type Type) {
+		if (!Type.equals(OBJECT_Type)) {
 			TypeInsn(Opcodes.CHECKCAST, Type);
 		}
 	}
-	
+
 	/**
 	 * Generates the instruction to invoke a normal method.
 	 *
-	 * @param owner  the class in which the method is defined.
+	 * @param owner the class in which the method is defined.
 	 * @param method the method to be invoked.
 	 */
-	public void invokeVirtual(final Type owner, final MethodDescriptor method){
+	public void invokeVirtual(final Type owner, final MethodDescriptor method) {
 		invokeInsn(Opcodes.INVOKEVIRTUAL, owner, method);
 	}
-	
+
 	/**
 	 * Generates an invoke method instruction.
 	 *
 	 * @param opcode the instruction's opcode.
-	 * @param type   the class in which the method is defined.
+	 * @param type the class in which the method is defined.
 	 * @param method the method to be invoked.
 	 */
-	private void invokeInsn(final int opcode, final Type type, final MethodDescriptor method){
+	private void invokeInsn(final int opcode, final Type type, final MethodDescriptor method) {
 		String owner = type.getSort() == Type.ARRAY ? type.getDescriptor() : type.getInternalName();
 		mv.visitMethodInsn(opcode, owner, method.getName(), method.getDescriptor());
 	}
-	
+
 	/**
 	 * Generates a Type dependent instruction.
 	 *
 	 * @param opcode the instruction's opcode.
-	 * @param type   the instruction's operand.
+	 * @param type the instruction's operand.
 	 */
-	private void TypeInsn(final int opcode, final Type type){
+	private void TypeInsn(final int opcode, final Type type) {
 		String desc;
-		
-		if(type.getSort() == Type.ARRAY) {
+
+		if (type.getSort() == Type.ARRAY) {
 			desc = type.getDescriptor();
-		} else { 
+		} else {
 			desc = type.getInternalName();
 		}
-		
+
 		mv.visitTypeInsn(opcode, desc);
 	}
 }

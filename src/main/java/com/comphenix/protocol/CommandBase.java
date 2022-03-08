@@ -21,36 +21,36 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 
+import com.comphenix.protocol.error.ErrorReporter;
+import com.comphenix.protocol.error.Report;
+import com.comphenix.protocol.error.ReportType;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import com.comphenix.protocol.error.ErrorReporter;
-import com.comphenix.protocol.error.Report;
-import com.comphenix.protocol.error.ReportType;
-
 /**
  * Base class for all our commands.
- * 
+ *
  * @author Kristian
  */
 abstract class CommandBase implements CommandExecutor {
 	public static final ReportType REPORT_COMMAND_ERROR = new ReportType("Cannot execute command %s.");
 	public static final ReportType REPORT_UNEXPECTED_COMMAND = new ReportType("Incorrect command assigned to %s.");
-	
+
 	public static final String PERMISSION_ADMIN = "protocol.admin";
-	
+
 	private String permission;
 	private String name;
 	private int minimumArgumentCount;
-	
+
 	protected ErrorReporter reporter;
-	
+
 	public CommandBase(ErrorReporter reporter, String permission, String name) {
 		this(reporter, permission, name, 0);
 	}
-	
+
 	public CommandBase(ErrorReporter reporter, String permission, String name, int minimumArgumentCount) {
 		this.reporter = reporter;
 		this.name = name;
@@ -71,7 +71,7 @@ abstract class CommandBase implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "You haven't got permission to run this command.");
 				return true;
 			}
-			
+
 			// Check argument length
 			if (args != null && args.length >= minimumArgumentCount) {
 				return handleCommand(sender, args);
@@ -81,7 +81,7 @@ abstract class CommandBase implements CommandExecutor {
 			}
 		} catch (Throwable ex) {
 			reporter.reportDetailed(this,
-					Report.newBuilder(REPORT_COMMAND_ERROR).error(ex).messageParam(name).callerParam(sender, label, args)
+				Report.newBuilder(REPORT_COMMAND_ERROR).error(ex).messageParam(name).callerParam(sender, label, args)
 			);
 			return true;
 		}
@@ -89,16 +89,17 @@ abstract class CommandBase implements CommandExecutor {
 
 	/**
 	 * Parse a boolean value at the head of the queue.
+	 *
 	 * @param arguments - the queue of arguments.
 	 * @param parameterName - the parameter name we will match.
 	 * @return The parsed boolean, or NULL if not valid.
 	 */
 	protected Boolean parseBoolean(Deque<String> arguments, String parameterName) {
 		Boolean result = null;
-		
+
 		if (!arguments.isEmpty()) {
 			String arg = arguments.peek();
-			
+
 			if (arg.equalsIgnoreCase("true") || arg.equalsIgnoreCase("on"))
 				result = true;
 			else if (arg.equalsIgnoreCase(parameterName))
@@ -106,14 +107,15 @@ abstract class CommandBase implements CommandExecutor {
 			else if (arg.equalsIgnoreCase("false") || arg.equalsIgnoreCase("off"))
 				result = false;
 		}
-		
+
 		if (result != null)
 			arguments.poll();
 		return result;
 	}
-		
+
 	/**
 	 * Create a queue from a sublist of a given array.
+	 *
 	 * @param args - the source array.
 	 * @param start - the starting index.
 	 * @return A queue that contains every element in the array, starting at the given index.
@@ -121,33 +123,37 @@ abstract class CommandBase implements CommandExecutor {
 	protected Deque<String> toQueue(String[] args, int start) {
 		return new ArrayDeque<String>(Arrays.asList(args).subList(start, args.length));
 	}
-	
+
 	/**
 	 * Retrieve the permission necessary to execute this command.
+	 *
 	 * @return The permission, or NULL if not needed.
 	 */
 	public String getPermission() {
 		return permission;
 	}
-	
+
 	/**
 	 * Retrieve the primary name of this command.
+	 *
 	 * @return Primary name.
 	 */
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Retrieve the error reporter.
+	 *
 	 * @return Error reporter.
 	 */
 	protected ErrorReporter getReporter() {
 		return reporter;
 	}
-	
+
 	/**
 	 * Main implementation of this command.
+	 *
 	 * @param sender - command sender.
 	 * @param args - input arguments.
 	 * @return TRUE if the command was successfully handled, FALSE otherwise.

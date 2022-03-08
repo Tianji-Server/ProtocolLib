@@ -19,7 +19,12 @@ package com.comphenix.protocol.injector.packet;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.comphenix.protocol.PacketType;
@@ -30,12 +35,14 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.reflect.fuzzy.FuzzyFieldContract;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
  * Static packet registry in Minecraft.
+ *
  * @author Kristian
  */
 public class PacketRegistry {
@@ -44,6 +51,7 @@ public class PacketRegistry {
 
 	/**
 	 * Represents a register we are currently building.
+	 *
 	 * @author Kristian
 	 */
 	protected static class Register {
@@ -55,7 +63,8 @@ public class PacketRegistry {
 		private volatile Set<PacketType> clientPackets = Sets.newHashSet();
 		private final List<MapContainer> containers = Lists.newArrayList();
 
-		public Register() {}
+		public Register() {
+		}
 
 		public void registerPacket(PacketType type, Class<?> clazz, Sender sender) {
 			typeToClass.put(type, Optional.of(clazz));
@@ -73,6 +82,7 @@ public class PacketRegistry {
 
 		/**
 		 * Determine if the current register is outdated.
+		 *
 		 * @return TRUE if it is, FALSE otherwise.
 		 */
 		public boolean isOutdated() {
@@ -169,10 +179,10 @@ public class PacketRegistry {
 			if (mainMapField == null) {
 				FuzzyReflection fuzzy = FuzzyReflection.fromClass(protocol.getClass(), true);
 				mainMapField = fuzzy.getField(FuzzyFieldContract.newBuilder()
-						.banModifier(Modifier.STATIC)
-						.requireModifier(Modifier.FINAL)
-						.typeDerivedOf(Map.class)
-						.build());
+					.banModifier(Modifier.STATIC)
+					.requireModifier(Modifier.FINAL)
+					.typeDerivedOf(Map.class)
+					.build());
 				mainMapField.setAccessible(true);
 			}
 
@@ -189,10 +199,10 @@ public class PacketRegistry {
 				if (packetMapField == null) {
 					FuzzyReflection fuzzy = FuzzyReflection.fromClass(holder.getClass(), true);
 					packetMapField = fuzzy.getField(FuzzyFieldContract.newBuilder()
-							.banModifier(Modifier.STATIC)
-							.requireModifier(Modifier.FINAL)
-							.typeDerivedOf(Map.class)
-							.build());
+						.banModifier(Modifier.STATIC)
+						.requireModifier(Modifier.FINAL)
+						.typeDerivedOf(Map.class)
+						.build());
 					packetMapField.setAccessible(true);
 				}
 
@@ -290,6 +300,7 @@ public class PacketRegistry {
 
 	/**
 	 * Determine if the given packet type is supported on the current server.
+	 *
 	 * @param type - the type to check.
 	 * @return TRUE if it is, FALSE otherwise.
 	 */
@@ -300,6 +311,7 @@ public class PacketRegistry {
 
 	/**
 	 * Retrieve every known and supported server packet type.
+	 *
 	 * @return Every server packet type.
 	 */
 	public static Set<PacketType> getServerPacketTypes() {
@@ -308,9 +320,10 @@ public class PacketRegistry {
 
 		return Collections.unmodifiableSet(REGISTER.serverPackets);
 	}
-	
+
 	/**
 	 * Retrieve every known and supported server packet type.
+	 *
 	 * @return Every server packet type.
 	 */
 	public static Set<PacketType> getClientPacketTypes() {
@@ -325,10 +338,11 @@ public class PacketRegistry {
 			try {
 				Class<?> clazz = MinecraftReflection.getMinecraftClass(name);
 				if (MinecraftReflection.getPacketClass().isAssignableFrom(clazz)
-						&& !Modifier.isAbstract(clazz.getModifiers())) {
+					&& !Modifier.isAbstract(clazz.getModifiers())) {
 					return clazz;
 				}
-			} catch (Exception ignored) {}
+			} catch (Exception ignored) {
+			}
 		}
 
 		return null;
@@ -371,16 +385,18 @@ public class PacketRegistry {
 	/**
 	 * Get the packet class associated with a given type. First attempts to read from the
 	 * type-to-class mapping, and tries
+	 *
 	 * @param type the packet type
 	 * @return The associated class
 	 */
 	public static Class<?> getPacketClassFromType(PacketType type) {
 		return tryGetPacketClass(type)
-				.orElseThrow(() -> new IllegalArgumentException("Could not find packet for type " + type.name()));
+			.orElseThrow(() -> new IllegalArgumentException("Could not find packet for type " + type.name()));
 	}
 
 	/**
 	 * Retrieve the packet type of a given packet.
+	 *
 	 * @param packet - the class of the packet.
 	 * @return The packet type, or NULL if not found.
 	 */
@@ -388,9 +404,10 @@ public class PacketRegistry {
 		initialize();
 		return REGISTER.classToType.get(packet);
 	}
-	
+
 	/**
 	 * Retrieve the packet type of a given packet.
+	 *
 	 * @param packet - the class of the packet.
 	 * @param sender - the sender of the packet, or NULL.
 	 * @return The packet type, or NULL if not found.

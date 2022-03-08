@@ -3,11 +3,11 @@
  */
 package com.comphenix.protocol.wrappers;
 
+import java.lang.reflect.Constructor;
+
 import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
-
-import java.lang.reflect.Constructor;
 
 /**
  * @author dmulloy2
@@ -83,7 +83,7 @@ public class Vector3F {
 	}
 
 	private static Constructor<?> constructor = null;
-	private static final Class<?> NMS_CLASS = MinecraftReflection.getNullableNMS("core.Vector3f","Vector3f");
+	private static final Class<?> NMS_CLASS = MinecraftReflection.getNullableNMS("core.Vector3f", "Vector3f");
 
 	public static Class<?> getMinecraftClass() {
 		return NMS_CLASS;
@@ -116,7 +116,7 @@ public class Vector3F {
 			@Override
 			public Vector3F getSpecific(Object generic) {
 				StructureModifier<Float> modifier = new StructureModifier<Float>(generic.getClass())
-						.withTarget(generic).withType(float.class);
+					.withTarget(generic).withType(float.class);
 				float x = modifier.read(0);
 				float y = modifier.read(1);
 				float z = modifier.read(2);

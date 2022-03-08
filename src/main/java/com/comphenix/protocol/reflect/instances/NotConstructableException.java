@@ -3,7 +3,7 @@ package com.comphenix.protocol.reflect.instances;
 /**
  * Invoked when a instance provider indicates that a given type cannot or should not be
  * constructed under any circumstances.
- * 
+ *
  * @author Kristian
  */
 public class NotConstructableException extends IllegalArgumentException {
@@ -18,29 +18,32 @@ public class NotConstructableException extends IllegalArgumentException {
 	public NotConstructableException() {
 		super("This object should never be constructed.");
 	}
-	
+
 	/**
 	 * Construct a new not constructable exception with a custom message.
+	 *
 	 * @param message - detail message
 	 */
 	public NotConstructableException(String message) {
 		super(message);
 	}
-	
+
 	/**
 	 * Construct a new not constructable exception with a custom message and cause.
+	 *
 	 * @param message - detail message
 	 * @param cause - cause
 	 */
 	public NotConstructableException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
 	/**
 	 * Construct a new not constructable exception with a custom cause.
+	 *
 	 * @param cause - cause
 	 */
 	public NotConstructableException(Throwable cause) {
-		super( cause);
+		super(cause);
 	}
 }

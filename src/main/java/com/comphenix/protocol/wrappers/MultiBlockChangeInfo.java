@@ -1,35 +1,34 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.wrappers;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-
-import org.bukkit.Location;
-import org.bukkit.World;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
 
+import org.bukkit.Location;
+import org.bukkit.World;
+
 /**
  * Represents a single block change.
- * 
+ *
  * @author dmulloy2
  */
 
@@ -55,7 +54,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Returns this block change's absolute Location in a given World.
-	 * 
+	 *
 	 * @param world World for the location
 	 * @return This block change's absolute Location
 	 */
@@ -65,7 +64,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Sets this block change's absolute Location.
-	 * 
+	 *
 	 * @param location This block change's new location
 	 */
 	public void setLocation(Location location) {
@@ -88,7 +87,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Gets this block change's relative x coordinate.
-	 * 
+	 *
 	 * @return Relative X coordinate
 	 */
 	public int getX() {
@@ -106,7 +105,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Sets this block change's absolute x coordinate.
-	 * 
+	 *
 	 * @param x New x coordinate
 	 */
 	public void setX(int x) {
@@ -115,7 +114,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Gets this block change's y coordinate.
-	 * 
+	 *
 	 * @return Y coordinate
 	 */
 	public int getY() {
@@ -124,7 +123,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Sets this block change's y coordinate
-	 * 
+	 *
 	 * @param y New y coordinate
 	 */
 	public void setY(int y) {
@@ -133,7 +132,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Gets this block change's relative z coordinate.
-	 * 
+	 *
 	 * @return Relative Z coordinate
 	 */
 	public int getZ() {
@@ -151,7 +150,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Sets this block change's relative z coordinate.
-	 * 
+	 *
 	 * @param z New z coordinate
 	 */
 	public void setZ(int z) {
@@ -160,7 +159,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Gets this block change's block data.
-	 * 
+	 *
 	 * @return The block data
 	 */
 	public WrappedBlockData getData() {
@@ -169,7 +168,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Sets this block change's block data.
-	 * 
+	 *
 	 * @param data New block data
 	 */
 	public void setData(WrappedBlockData data) {
@@ -178,7 +177,7 @@ public class MultiBlockChangeInfo {
 
 	/**
 	 * Gets the chunk this block change occured in.
-	 * 
+	 *
 	 * @return The chunk
 	 */
 	public ChunkCoordIntPair getChunk() {
@@ -196,7 +195,7 @@ public class MultiBlockChangeInfo {
 				short location = shorts.read(0);
 
 				StructureModifier<WrappedBlockData> dataModifier = modifier.withType(MinecraftReflection.getIBlockDataClass(),
-						BukkitConverters.getWrappedBlockDataConverter());
+					BukkitConverters.getWrappedBlockDataConverter());
 				WrappedBlockData data = dataModifier.read(0);
 
 				return new MultiBlockChangeInfo(location, data, chunk);
@@ -207,16 +206,16 @@ public class MultiBlockChangeInfo {
 				try {
 					if (constructor == null) {
 						constructor = nmsClass.getConstructor(
-								PacketType.Play.Server.MULTI_BLOCK_CHANGE.getPacketClass(),
-								short.class,
-								MinecraftReflection.getIBlockDataClass()
+							PacketType.Play.Server.MULTI_BLOCK_CHANGE.getPacketClass(),
+							short.class,
+							MinecraftReflection.getIBlockDataClass()
 						);
 					}
 
 					return constructor.newInstance(
-							null,
-							specific.location,
-							BukkitConverters.getWrappedBlockDataConverter().getGeneric(specific.data)
+						null,
+						specific.location,
+						BukkitConverters.getWrappedBlockDataConverter().getGeneric(specific.data)
 					);
 				} catch (Throwable ex) {
 					throw new RuntimeException("Failed to construct MultiBlockChangeInfo instance.", ex);

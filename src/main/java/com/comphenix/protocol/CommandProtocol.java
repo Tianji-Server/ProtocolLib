@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2012 Kristian S. Stangeland
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol;
 
@@ -27,11 +27,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-
 import com.comphenix.protocol.error.DetailedErrorReporter;
 import com.comphenix.protocol.error.ErrorReporter;
 import com.comphenix.protocol.events.PacketListener;
@@ -40,6 +35,11 @@ import com.comphenix.protocol.timing.TimingReportGenerator;
 import com.comphenix.protocol.updater.Updater;
 import com.comphenix.protocol.updater.Updater.UpdateType;
 import com.comphenix.protocol.utility.Closer;
+
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 /**
  * Handles the "protocol" administration command.
@@ -51,7 +51,7 @@ class CommandProtocol extends CommandBase {
 	 * Name of this command.
 	 */
 	public static final String NAME = "protocol";
-	
+
 	private Plugin plugin;
 	private Updater updater;
 	private ProtocolConfig config;
@@ -62,7 +62,7 @@ class CommandProtocol extends CommandBase {
 		this.updater = updater;
 		this.config = config;
 	}
-	
+
 	@Override
 	protected boolean handleCommand(CommandSender sender, String[] args) {
 		String subCommand = args[0];
@@ -88,19 +88,19 @@ class CommandProtocol extends CommandBase {
 
 		return true;
 	}
-	
+
 	public void checkVersion(final CommandSender sender, boolean command) {
 		performUpdate(sender, UpdateType.NO_DOWNLOAD, command);
 	}
-	
+
 	public void updateVersion(final CommandSender sender, boolean command) {
 		performUpdate(sender, UpdateType.DEFAULT, command);
 	}
-	
+
 	// Display every listener on the server
 	private void printListeners(final CommandSender sender) {
 		ProtocolManager manager = ProtocolLibrary.getProtocolManager();
-		
+
 		sender.sendMessage(ChatColor.GOLD + "Packet listeners:");
 		for (PacketListener listener : manager.getPacketListeners()) {
 			sender.sendMessage(ChatColor.GOLD + " - " + listener);
@@ -112,7 +112,7 @@ class CommandProtocol extends CommandBase {
 			sender.sendMessage(ChatColor.GOLD + " - " + listener);
 		}
 	}
-	
+
 	private void performUpdate(final CommandSender sender, UpdateType type, final boolean command) {
 		if (updater.isChecking()) {
 			sender.sendMessage(ChatColor.RED + "Already checking for an update.");
@@ -141,15 +141,15 @@ class CommandProtocol extends CommandBase {
 		updater.start(type);
 		updater.addListener(notify);
 	}
-	
+
 	private void toggleTimings(CommandSender sender, String[] args) {
 		TimedListenerManager manager = TimedListenerManager.getInstance();
 		boolean state = !manager.isTiming(); // toggle
-		
+
 		// Parse the boolean parameter
 		if (args.length == 2) {
 			Boolean parsed = parseBoolean(toQueue(args, 2), "start");
-			
+
 			if (parsed != null) {
 				state = parsed;
 			} else {
@@ -160,7 +160,7 @@ class CommandProtocol extends CommandBase {
 			sender.sendMessage(ChatColor.RED + "Too many parameters.");
 			return;
 		}
-		
+
 		// Now change the state
 		if (state) {
 			if (manager.startTiming())
@@ -174,23 +174,23 @@ class CommandProtocol extends CommandBase {
 			} else {
 				sender.sendMessage(ChatColor.RED + "Packet timing already stopped.");
 			}
- 		}
+		}
 	}
-	
+
 	private void saveTimings(TimedListenerManager manager) {
 		try {
 			File destination = new File(plugin.getDataFolder(), "Timings - " + System.currentTimeMillis() + ".txt");
 			TimingReportGenerator generator = new TimingReportGenerator();
-			
+
 			// Print to a text file
 			generator.saveTo(destination, manager);
 			manager.clear();
-			
+
 		} catch (IOException e) {
 			reporter.reportMinimal(plugin, "saveTimings()", e);
 		}
 	}
-	
+
 	/**
 	 * Prevent further automatic updates until the next delay.
 	 */
@@ -200,7 +200,7 @@ class CommandProtocol extends CommandBase {
 		config.setAutoLastTime(currentTime);
 		config.saveAll();
 	}
-	
+
 	public void reloadConfiguration(CommandSender sender) {
 		plugin.reloadConfig();
 		sender.sendMessage(ChatColor.YELLOW + "Reloaded configuration!");
@@ -233,7 +233,7 @@ class CommandProtocol extends CommandBase {
 			}
 
 			file.createNewFile();
-			
+
 			FileWriter fw = closer.register(new FileWriter(file));
 			PrintWriter pw = closer.register(new PrintWriter(fw));
 

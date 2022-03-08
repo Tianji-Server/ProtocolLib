@@ -8,6 +8,7 @@ import java.util.OptionalInt;
 
 /**
  * A cloner that can clone Java Optional objects
+ *
  * @author dmulloy2
  */
 public class JavaOptionalCloner implements Cloner {

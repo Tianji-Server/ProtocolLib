@@ -17,7 +17,11 @@
 
 package com.comphenix.protocol.wrappers.nbt;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -38,8 +42,8 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.BukkitConverters;
 import com.comphenix.protocol.wrappers.nbt.io.NbtBinarySerializer;
-import com.google.common.base.Preconditions;
 
+import com.google.common.base.Preconditions;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -50,7 +54,7 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author Kristian
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class NbtFactory {
 	private static final Map<NbtType, Constructor<?>> CONSTRUCTORS = new ConcurrentHashMap<>();
 	// Used to create the underlying tag
@@ -72,7 +76,7 @@ public class NbtFactory {
 			return (NbtCompound) tag;
 		else if (tag != null)
 			throw new UnsupportedOperationException(
-					"Cannot cast a " + tag.getClass() + "( " + tag.getType() + ") to TAG_COMPUND.");
+				"Cannot cast a " + tag.getClass() + "( " + tag.getType() + ") to TAG_COMPUND.");
 		else
 			throw new IllegalArgumentException("Tag cannot be NULL.");
 	}
@@ -89,7 +93,7 @@ public class NbtFactory {
 			return (NbtList<?>) tag;
 		else if (tag != null)
 			throw new UnsupportedOperationException(
-					"Cannot cast a " + tag.getClass() + "( " + tag.getType() + ") to TAG_LIST.");
+				"Cannot cast a " + tag.getClass() + "( " + tag.getType() + ") to TAG_LIST.");
 		else
 			throw new IllegalArgumentException("Tag cannot be NULL.");
 	}
@@ -211,7 +215,7 @@ public class NbtFactory {
 		Preconditions.checkNotNull(file, "file cannot be NULL");
 
 		try (FileInputStream stream = new FileInputStream(file);
-				DataInputStream input = new DataInputStream(new GZIPInputStream(stream))) {
+			 DataInputStream input = new DataInputStream(new GZIPInputStream(stream))) {
 			return NbtBinarySerializer.DEFAULT.deserializeCompound(input);
 		}
 	}
@@ -228,7 +232,7 @@ public class NbtFactory {
 		Preconditions.checkNotNull(file, "file cannot be NULL");
 
 		try (FileOutputStream stream = new FileOutputStream(file);
-				DataOutputStream output = new DataOutputStream(new GZIPOutputStream(stream))) {
+			 DataOutputStream output = new DataOutputStream(new GZIPOutputStream(stream))) {
 			NbtBinarySerializer.DEFAULT.serialize(compound, output);
 		}
 	}
@@ -293,8 +297,8 @@ public class NbtFactory {
 
 		// Use the first and best NBT tag
 		return itemStackModifier.
-				withTarget(nmsStack).
-				withType(MinecraftReflection.getNBTBaseClass(), BukkitConverters.getNbtConverter());
+			withTarget(nmsStack).
+			withType(MinecraftReflection.getNBTBaseClass(), BukkitConverters.getNbtConverter());
 	}
 
 	/**
@@ -555,7 +559,7 @@ public class NbtFactory {
 	}
 
 	// For Minecraft 1.6.4 and below
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <T> NbtWrapper<T> createTagWithName(NbtType type, String name) throws Exception {
 		Object handle = methodCreateTag.invoke(null, (byte) type.getRawID(), name);
 
@@ -568,7 +572,7 @@ public class NbtFactory {
 	}
 
 	// For Minecraft 1.7.2 to 1.14.4
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <T> NbtWrapper<T> createTagSetName(NbtType type, String name) throws Exception {
 		Object handle = methodCreateTag.invoke(null, (byte) type.getRawID());
 
@@ -595,7 +599,7 @@ public class NbtFactory {
 				Class<?> tagTypes = MinecraftReflection.getNbtTagTypes();
 				FuzzyReflection fuzzy = FuzzyReflection.fromClass(tagTypes, false);
 				getTagType = fuzzy.getMethod(
-						FuzzyMethodContract.newBuilder().parameterCount(1).parameterExactType(int.class).build());
+					FuzzyMethodContract.newBuilder().parameterCount(1).parameterExactType(int.class).build());
 			}
 
 			Class<?> nbtClass;
@@ -612,7 +616,7 @@ public class NbtFactory {
 					constructor = fuzzy.getConstructor(FuzzyMethodContract.newBuilder().parameterCount(0).build());
 				} else {
 					constructor = fuzzy.getConstructor(
-							FuzzyMethodContract.newBuilder().parameterCount(1).parameterSuperOf(valueType).build());
+						FuzzyMethodContract.newBuilder().parameterCount(1).parameterSuperOf(valueType).build());
 				}
 
 				constructor.setAccessible(true);
@@ -675,7 +679,7 @@ public class NbtFactory {
 	 * @param name - the name of the NBT tag.
 	 * @param value - the value of the new tag.
 	 * @return The new wrapped NBT tag.
-	 * @throws FieldAccessException     If we're unable to create the underlying tag.
+	 * @throws FieldAccessException If we're unable to create the underlying tag.
 	 * @throws IllegalArgumentException If the given class type is not valid NBT.
 	 */
 	public static <T> NbtWrapper<T> ofWrapper(Class<?> type, String name, T value) {

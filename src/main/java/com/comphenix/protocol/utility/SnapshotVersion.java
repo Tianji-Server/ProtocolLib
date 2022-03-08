@@ -14,6 +14,7 @@ import com.google.common.collect.ComparisonChain;
 
 /**
  * Used to parse a snapshot version.
+ *
  * @author Kristian
  */
 public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializable {
@@ -26,10 +27,10 @@ public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializabl
 	private final int snapshotWeekVersion;
 
 	private transient String rawString;
-	
+
 	public SnapshotVersion(String version) {
 		Matcher matcher = SNAPSHOT_PATTERN.matcher(version.trim());
-		
+
 		if (matcher.matches()) {
 			try {
 				this.snapshotDate = getDateFormat().parse(matcher.group(1));
@@ -42,11 +43,12 @@ public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializabl
 			throw new IllegalArgumentException("Cannot parse " + version + " as a snapshot version.");
 		}
 	}
-	
+
 	/**
 	 * Retrieve the snapshot date parser.
 	 * <p>
 	 * We have to create a new instance of SimpleDateFormat every time as it is not thread safe.
+	 *
 	 * @return The date formatter.
 	 */
 	private static SimpleDateFormat getDateFormat() {
@@ -54,25 +56,28 @@ public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializabl
 		format.setLenient(false);
 		return format;
 	}
-	
+
 	/**
 	 * Retrieve the snapshot version within a week, starting at zero.
+	 *
 	 * @return The weekly version
 	 */
 	public int getSnapshotWeekVersion() {
 		return snapshotWeekVersion;
 	}
-	
+
 	/**
 	 * Retrieve the week this snapshot was released.
+	 *
 	 * @return The week.
 	 */
 	public Date getSnapshotDate() {
 		return snapshotDate;
 	}
-	
+
 	/**
 	 * Retrieve the raw snapshot string (yy'w'ww[a-z]).
+	 *
 	 * @return The snapshot string.
 	 */
 	public String getSnapshotString() {
@@ -81,7 +86,7 @@ public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializabl
 			Calendar current = Calendar.getInstance(Locale.US);
 			current.setTime(snapshotDate);
 			rawString = String.format("%02dw%02d%s",
-				current.get(Calendar.YEAR) % 100, 
+				current.get(Calendar.YEAR) % 100,
 				current.get(Calendar.WEEK_OF_YEAR),
 				(char) ('a' + snapshotWeekVersion));
 		}
@@ -92,13 +97,13 @@ public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializabl
 	public int compareTo(SnapshotVersion o) {
 		if (o == null)
 			return 1;
-	
+
 		return ComparisonChain.start().
-					compare(snapshotDate, o.getSnapshotDate()).
-					compare(snapshotWeekVersion, o.getSnapshotWeekVersion()).
-					result();
+			compare(snapshotDate, o.getSnapshotDate()).
+			compare(snapshotWeekVersion, o.getSnapshotWeekVersion()).
+			result();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this)
@@ -106,16 +111,16 @@ public class SnapshotVersion implements Comparable<SnapshotVersion>, Serializabl
 		if (obj instanceof SnapshotVersion) {
 			SnapshotVersion other = (SnapshotVersion) obj;
 			return Objects.equal(snapshotDate, other.getSnapshotDate()) &&
-				   snapshotWeekVersion == other.getSnapshotWeekVersion();
+				snapshotWeekVersion == other.getSnapshotWeekVersion();
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hashCode(snapshotDate, snapshotWeekVersion);
 	}
-	
+
 	@Override
 	public String toString() {
 		return getSnapshotString();

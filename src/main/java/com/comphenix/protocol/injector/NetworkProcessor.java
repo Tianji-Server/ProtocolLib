@@ -14,21 +14,24 @@ import com.comphenix.protocol.events.ScheduledPacket;
 
 /**
  * Represents a processor for network markers.
+ *
  * @author Kristian
  */
 public class NetworkProcessor {
 	private ErrorReporter reporter;
-	
+
 	/**
 	 * Construct a new network processor.
+	 *
 	 * @param reporter - the reporter.
 	 */
 	public NetworkProcessor(ErrorReporter reporter) {
 		this.reporter = reporter;
 	}
-	
+
 	/**
 	 * Process the serialized packet byte array with the given network marker.
+	 *
 	 * @param event - current packet event.
 	 * @param marker - the network marker.
 	 * @param input - the input array.
@@ -39,14 +42,14 @@ public class NetworkProcessor {
 		PriorityQueue<PacketOutputHandler> handlers = (PriorityQueue<PacketOutputHandler>)
 			marker.getOutputHandlers();
 		byte[] output = input;
-		
+
 		// Let each handler prepare the actual output
 		while (!handlers.isEmpty()) {
 			PacketOutputHandler handler = handlers.poll();
-			
+
 			try {
 				byte[] changed = handler.handle(event, output);
-				
+
 				// Don't break just because a plugin returned NULL
 				if (changed != null) {
 					output = changed;
@@ -66,13 +69,14 @@ public class NetworkProcessor {
 
 	/**
 	 * Invoke the post listeners and packet transmission, if any.
+	 *
 	 * @param event - PacketEvent
 	 * @param marker - the network marker, or NULL.
 	 */
 	public void invokePostEvent(PacketEvent event, NetworkMarker marker) {
 		if (marker == null)
 			return;
-		
+
 		if (NetworkMarker.hasPostListeners(marker)) {
 			// Invoke every sent listener
 			for (PacketPostListener listener : marker.getPostListeners()) {
@@ -89,20 +93,21 @@ public class NetworkProcessor {
 		}
 		sendScheduledPackets(marker);
 	}
-	
+
 	/**
 	 * Send any scheduled packets.
+	 *
 	 * @param marker - the network marker.
 	 */
 	private void sendScheduledPackets(NetworkMarker marker) {
 		// Next, invoke post packet transmission
 		List<ScheduledPacket> scheduled = NetworkMarker.readScheduledPackets(marker);
 		ProtocolManager manager = ProtocolLibrary.getProtocolManager();
-		
+
 		if (scheduled != null) {
 			for (ScheduledPacket packet : scheduled) {
 				packet.schedule(manager);
 			}
 		}
 	}
- }
+}

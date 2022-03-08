@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.injector.netty;
 
@@ -20,13 +20,9 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
-
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLogger;
@@ -46,11 +42,11 @@ import com.comphenix.protocol.injector.player.PlayerInjectionHandler;
 import com.comphenix.protocol.injector.server.TemporaryPlayerFactory;
 import com.comphenix.protocol.reflect.FuzzyReflection;
 import com.comphenix.protocol.reflect.VolatileField;
-import com.comphenix.protocol.utility.NettyVersion;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
-import com.google.common.collect.Lists;
+import com.comphenix.protocol.utility.NettyVersion;
 
+import com.google.common.collect.Lists;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
@@ -58,6 +54,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 public class ProtocolInjector implements ChannelListener {
 	public static final ReportType REPORT_CANNOT_INJECT_INCOMING_CHANNEL = new ReportType("Unable to inject incoming channel %s.");
@@ -153,9 +151,9 @@ public class ProtocolInjector implements ChannelListener {
 
 							// Check if the netty version is greater than 4.1.24, that's the version bundled with spigot 1.12
 							NettyVersion ver = NettyVersion.getVersion();
-							if ((ver.isValid() && ver.isGreaterThan(4,1,24)) ||
-									MinecraftVersion.getCurrentVersion().getMinor() >= 12) { // fallback if netty version couldn't be detected
-							channel.eventLoop().submit(() ->
+							if ((ver.isValid() && ver.isGreaterThan(4, 1, 24)) ||
+								MinecraftVersion.getCurrentVersion().getMinor() >= 12) { // fallback if netty version couldn't be detected
+								channel.eventLoop().submit(() ->
 									injectionFactory.fromChannel(channel, ProtocolInjector.this, playerFactory).inject());
 							} else {
 								injectionFactory.fromChannel(channel, ProtocolInjector.this, playerFactory).inject();
@@ -193,7 +191,7 @@ public class ProtocolInjector implements ChannelListener {
 					return true;
 				}
 			};
-			
+
 			FuzzyReflection fuzzy = FuzzyReflection.fromObject(serverConnection, true);
 
 			try {
@@ -204,8 +202,8 @@ public class ProtocolInjector implements ChannelListener {
 			} catch (Exception ex) {
 				ProtocolLogger.debug("Encountered an exception checking list fields", ex);
 
-				Method method =  fuzzy.getMethodByParameters("getNetworkManagers", List.class,
-						new Class<?>[] { serverConnection.getClass() });
+				Method method = fuzzy.getMethodByParameters("getNetworkManagers", List.class,
+					new Class<?>[] { serverConnection.getClass() });
 				method.setAccessible(true);
 
 				networkManagers = (List<Object>) method.invoke(null, serverConnection);

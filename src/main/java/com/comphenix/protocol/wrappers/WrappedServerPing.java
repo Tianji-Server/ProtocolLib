@@ -7,12 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
 import javax.imageio.ImageIO;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
-import org.bukkit.entity.Player;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.injector.BukkitUnwrapper;
@@ -25,19 +20,23 @@ import com.comphenix.protocol.utility.MinecraftProtocolVersion;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.utility.Util;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.base64.Base64;
+import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.entity.Player;
 
 /**
  * Represents a server ping packet data.
+ *
  * @author Kristian
  */
 public class WrappedServerPing extends AbstractWrapper implements ClonableWrapper {
@@ -80,7 +79,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	// Get profile from player
 	private static FieldAccessor ENTITY_HUMAN_PROFILE = Accessors.getFieldAccessor(
-			MinecraftReflection.getEntityPlayerClass().getSuperclass(), GAME_PROFILE, true);
+		MinecraftReflection.getEntityPlayerClass().getSuperclass(), GAME_PROFILE, true);
 
 	// Inner class
 	private Object players; // may be NULL
@@ -124,6 +123,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Construct a wrapped server ping from a native NMS object.
+	 *
 	 * @param handle - the native object.
 	 * @return The wrapped server ping object.
 	 */
@@ -133,6 +133,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Construct a wrapper server ping from an encoded JSON string.
+	 *
 	 * @param json - the JSON string.
 	 * @return The wrapped server ping.
 	 */
@@ -142,6 +143,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the message of the day.
+	 *
 	 * @return The messge of the day.
 	 */
 	public WrappedChatComponent getMotD() {
@@ -150,6 +152,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the message of the day.
+	 *
 	 * @param description - message of the day.
 	 */
 	public void setMotD(WrappedChatComponent description) {
@@ -158,6 +161,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the message of the day.
+	 *
 	 * @param message - the message.
 	 */
 	public void setMotD(String message) {
@@ -166,6 +170,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the compressed PNG file that is being displayed as a favicon.
+	 *
 	 * @return The favicon, or NULL if no favicon will be displayed.
 	 */
 	public CompressedImage getFavicon() {
@@ -175,6 +180,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the compressed PNG file that is being displayed.
+	 *
 	 * @param image - the new compressed image or NULL if no favicon should be displayed.
 	 */
 	public void setFavicon(CompressedImage image) {
@@ -183,6 +189,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the displayed number of online players.
+	 *
 	 * @return The displayed number.
 	 * @throws IllegalStateException If the player count has been hidden via {@link #setPlayersVisible(boolean)}.
 	 * @see #setPlayersOnline(int)
@@ -198,6 +205,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 	 * <p>
 	 * As of 1.7.2, this is completely unrestricted, and can be both positive and
 	 * negative, as well as higher than the player maximum.
+	 *
 	 * @param online - online players.
 	 */
 	public void setPlayersOnline(int online) {
@@ -208,6 +216,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the displayed maximum number of players.
+	 *
 	 * @return The maximum number.
 	 * @throws IllegalStateException If the player maximum has been hidden via {@link #setPlayersVisible(boolean)}.
 	 * @see #setPlayersMaximum(int)
@@ -223,6 +232,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 	 * <p>
 	 * The 1.7.2 accepts any value as a player maximum, positive or negative. It even permits a player maximum that
 	 * is less than the player count.
+	 *
 	 * @param maximum - maximum player count.
 	 */
 	public void setPlayersMaximum(int maximum) {
@@ -235,6 +245,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 	 * Set whether or not the player count and player maximum is visible.
 	 * <p>
 	 * Note that this may set the current player count and maximum to their respective real values.
+	 *
 	 * @param visible - TRUE if it should be visible, FALSE otherwise.
 	 */
 	public void setPlayersVisible(boolean visible) {
@@ -254,6 +265,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 	 * Determine if the player count and maximum is visible.
 	 * <p>
 	 * If not, the client will display ??? in the same location.
+	 *
 	 * @return TRUE if the player statistics is visible, FALSE otherwise.
 	 */
 	public boolean isPlayersVisible() {
@@ -262,6 +274,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve a copy of all the logged in players.
+	 *
 	 * @return Logged in players or an empty list if no player names will be displayed.
 	 */
 	public ImmutableList<WrappedGameProfile> getPlayers() {
@@ -275,6 +288,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the displayed list of logged in players.
+	 *
 	 * @param profile - every logged in player.
 	 */
 	public void setPlayers(Iterable<? extends WrappedGameProfile> profile) {
@@ -285,6 +299,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the displayed lst of logged in players.
+	 *
 	 * @param players - the players to display.
 	 */
 	public void setBukkitPlayers(Iterable<? extends Player> players) {
@@ -300,6 +315,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the version name of the current server.
+	 *
 	 * @return The version name.
 	 */
 	public String getVersionName() {
@@ -308,6 +324,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the version name of the current server.
+	 *
 	 * @param name - the new version name.
 	 */
 	public void setVersionName(String name) {
@@ -316,6 +333,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the protocol number.
+	 *
 	 * @return The protocol.
 	 */
 	public int getVersionProtocol() {
@@ -324,6 +342,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Set the version protocol
+	 *
 	 * @param protocol - the protocol number.
 	 */
 	public void setVersionProtocol(int protocol) {
@@ -332,6 +351,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve a deep copy of the current wrapper object.
+	 *
 	 * @return The current object.
 	 */
 	public WrappedServerPing deepClone() {
@@ -355,6 +375,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Retrieve the underlying JSON representation of this server ping.
+	 *
 	 * @return The JSON representation.
 	 */
 	public String toJson() {
@@ -368,6 +389,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Represents a compressed favicon.
+	 *
 	 * @author Kristian
 	 */
 	// Should not have been an inner class ... oh well.
@@ -385,6 +407,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Construct a new compressed image.
+		 *
 		 * @param mime - the mime type.
 		 * @param data - the raw compressed image data.
 		 */
@@ -395,6 +418,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve a compressed image from an input stream.
+		 *
 		 * @param input - the PNG as an input stream.
 		 * @return The compressed image.
 		 * @throws IOException If we cannot read the input stream.
@@ -405,6 +429,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve a compressed image from a byte array of a PNG file.
+		 *
 		 * @param data - the file as a byte array.
 		 * @return The compressed image.
 		 */
@@ -414,6 +439,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve a compressed image from a base-64 encoded PNG file.
+		 *
 		 * @param base64 - the base 64-encoded PNG.
 		 * @return The compressed image.
 		 */
@@ -428,6 +454,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve a compressed image from an image.
+		 *
 		 * @param image - the image.
 		 * @return A compressed image from an image.
 		 * @throws IOException If we were unable to compress the image.
@@ -440,6 +467,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve a compressed image from an encoded text.
+		 *
 		 * @param text - the encoded text.
 		 * @return The corresponding compressed image.
 		 */
@@ -451,6 +479,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 		 * Retrieve the MIME type of the image.
 		 * <p>
 		 * This is image/png in vanilla Minecraft.
+		 *
 		 * @return The MIME type.
 		 */
 		public String getMime() {
@@ -459,6 +488,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve a copy of the underlying data array.
+		 *
 		 * @return The underlying compressed image.
 		 */
 		public byte[] getDataCopy() {
@@ -467,6 +497,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Retrieve the underlying data, with no copying.
+		 *
 		 * @return The underlying data.
 		 */
 		protected byte[] getData() {
@@ -475,6 +506,7 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Uncompress and return the stored image.
+		 *
 		 * @return The image.
 		 * @throws IOException If the image data could not be decoded.
 		 */
@@ -484,13 +516,14 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 		/**
 		 * Convert the compressed image to encoded text.
+		 *
 		 * @return The encoded text.
 		 */
 		public String toEncodedText() {
 			if (encoded == null) {
 				final ByteBuf buffer = Unpooled.wrappedBuffer(getDataCopy());
 				encoded = "data:" + getMime() + ";base64," +
-						Base64.encode(buffer).toString(Charsets.UTF_8);
+					Base64.encode(buffer).toString(Charsets.UTF_8);
 			}
 
 			return encoded;
@@ -499,11 +532,12 @@ public class WrappedServerPing extends AbstractWrapper implements ClonableWrappe
 
 	/**
 	 * Represents a compressed image that starts out as an encoded base 64 string.
+	 *
 	 * @author Kristian
 	 */
 	private static class EncodedCompressedImage extends CompressedImage {
 		public EncodedCompressedImage(String encoded) {
-			this.encoded =  Preconditions.checkNotNull(encoded, "encoded favicon cannot be NULL");
+			this.encoded = Preconditions.checkNotNull(encoded, "encoded favicon cannot be NULL");
 		}
 
 		/**

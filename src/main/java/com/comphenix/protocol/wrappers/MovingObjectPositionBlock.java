@@ -11,14 +11,15 @@ import org.bukkit.util.Vector;
 
 public class MovingObjectPositionBlock implements Cloneable {
 	private static final Class<?> NMS_CLASS = MinecraftReflection.getNullableNMS(
-			"world.phys.MovingObjectPositionBlock", "MovingObjectPositionBlock");
+		"world.phys.MovingObjectPositionBlock", "MovingObjectPositionBlock");
 
 	private BlockPosition position;
 	private Vector posVector;
 	private Direction direction;
 	private boolean insideBlock;
 
-	public MovingObjectPositionBlock() { }
+	public MovingObjectPositionBlock() {
+	}
 
 	public MovingObjectPositionBlock(BlockPosition position, Vector posVector, Direction direction, boolean insideBlock) {
 		this.position = position;
@@ -71,10 +72,10 @@ public class MovingObjectPositionBlock implements Cloneable {
 			public Object getGeneric(MovingObjectPositionBlock specific) {
 				if (constructor == null) {
 					constructor = Accessors.getConstructorAccessor(NMS_CLASS,
-							MinecraftReflection.getVec3DClass(),
-							EnumWrappers.getDirectionClass(),
-							MinecraftReflection.getBlockPositionClass(),
-							boolean.class);
+						MinecraftReflection.getVec3DClass(),
+						EnumWrappers.getDirectionClass(),
+						MinecraftReflection.getBlockPositionClass(),
+						boolean.class);
 				}
 
 				Object nmsVector = BukkitConverters.getVectorConverter().getGeneric(specific.posVector);

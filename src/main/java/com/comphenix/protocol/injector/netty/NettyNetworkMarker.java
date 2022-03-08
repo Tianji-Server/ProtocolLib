@@ -3,7 +3,6 @@ package com.comphenix.protocol.injector.netty;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
 import javax.annotation.Nonnull;
 
 import com.comphenix.protocol.PacketType;
@@ -25,13 +24,13 @@ public class NettyNetworkMarker extends NetworkMarker {
 		getSerializer().deserializeVarInt(input);
 		return input;
 	}
-	
+
 	@Override
 	protected ByteBuffer addHeader(ByteBuffer buffer, PacketType type) {
 		// We don't have to add anything - it's already there
 		return buffer;
 	}
-	
+
 	@Override
 	protected DataInputStream addHeader(DataInputStream input, PacketType type) {
 		// As above

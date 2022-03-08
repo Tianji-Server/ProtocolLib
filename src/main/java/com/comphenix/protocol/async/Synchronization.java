@@ -2,16 +2,16 @@
  *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
  *  Copyright (C) 2012 Kristian S. Stangeland
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the 
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of 
+ *  This program is free software; you can redistribute it and/or modify it under the terms of the
+ *  GNU General Public License as published by the Free Software Foundation; either version 2 of
  *  the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *  See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program; 
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
+ *  You should have received a copy of the GNU General Public License along with this program;
+ *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307 USA
  */
 
@@ -21,14 +21,13 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
-
 import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
 /**
  * Synchronization views copied from Google Guava.
- * 
+ *
  * @author Kristian
  */
 class Synchronization {
@@ -36,18 +35,19 @@ class Synchronization {
 	/**
 	 * Create a synchronized wrapper for the given queue.
 	 * <p>
-	 * This wrapper cannot synchronize the iterator(). Callers are expected 
+	 * This wrapper cannot synchronize the iterator(). Callers are expected
 	 * to synchronize iterators manually.
+	 *
 	 * @param queue - the queue to synchronize.
 	 * @param mutex - synchronization mutex, or NULL to use the queue.
 	 * @return A synchronization wrapper.
 	 */
 	public static <E> Queue<E> queue(Queue<E> queue, @Nullable Object mutex) {
-		return (queue instanceof SynchronizedQueue) ? 
-				queue : 
-					new SynchronizedQueue<E>(queue, mutex);
+		return (queue instanceof SynchronizedQueue) ?
+			queue :
+			new SynchronizedQueue<E>(queue, mutex);
 	}
-	
+
 	private static class SynchronizedObject implements Serializable {
 		private static final long serialVersionUID = -4408866092364554628L;
 
@@ -77,7 +77,7 @@ class Synchronization {
 		private static final long serialVersionUID = 5440572373531285692L;
 
 		private SynchronizedCollection(Collection<E> delegate,
-				@Nullable Object mutex) {
+									   @Nullable Object mutex) {
 			super(delegate, mutex);
 		}
 

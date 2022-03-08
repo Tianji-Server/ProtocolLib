@@ -1,24 +1,20 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2015 dmulloy2
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2015 dmulloy2
  *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol.injector.netty;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,11 +23,14 @@ import java.util.ListIterator;
 import java.util.concurrent.Callable;
 
 import com.google.common.collect.Lists;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
 
 public class BootstrapList implements List<Object> {
 	private List<Object> delegate;
 	private ChannelHandler handler;
-	
+
 	/**
 	 * Construct a new bootstrap list.
 	 * @param delegate - the delegate.
@@ -40,7 +39,7 @@ public class BootstrapList implements List<Object> {
 	public BootstrapList(List<Object> delegate, ChannelHandler handler) {
 		this.delegate = delegate;
 		this.handler = handler;
-		
+
 		// Process all existing bootstraps
 		for (Object item : this) {
 			processElement(item);
@@ -52,22 +51,22 @@ public class BootstrapList implements List<Object> {
 		processElement(element);
 		return delegate.add(element);
 	}
-	
+
 	@Override
 	public synchronized boolean addAll(Collection<? extends Object> collection) {
 		List<Object> copy = Lists.newArrayList(collection);
-		
+
 		// Process the collection before we pass it on
 		for (Object element : copy) {
 			processElement(element);
 		}
 		return delegate.addAll(copy);
 	}
-	
+
 	@Override
 	public synchronized Object set(int index, Object element) {
 		Object old = delegate.set(index, element);
-		
+
 		// Handle the old future, and the newly inserted future
 		if (old != element) {
 			unprocessElement(old);
@@ -75,7 +74,7 @@ public class BootstrapList implements List<Object> {
 		}
 		return old;
 	}
-	
+
 	/**
 	 * Process a single element.
 	 * @param element - the element.
@@ -85,7 +84,7 @@ public class BootstrapList implements List<Object> {
 			processBootstrap((ChannelFuture) element);
 		}
 	}
-	
+
 	/**
 	 * Unprocess a single element.
 	 * @param element - the element to unprocess.
@@ -95,7 +94,7 @@ public class BootstrapList implements List<Object> {
 			unprocessBootstrap((ChannelFuture) element);
 		}
 	}
-	
+
 	/**
 	 * Process a single channel future.
 	 * @param future - the future.
@@ -104,14 +103,14 @@ public class BootstrapList implements List<Object> {
 		// Important: Must be addFirst()
 		future.channel().pipeline().addFirst(handler);
 	}
-	
+
 	/**
 	 * Revert any changes we made to the channel future.
 	 * @param future - the future.
 	 */
 	protected void unprocessBootstrap(ChannelFuture future) {
 		final Channel channel = future.channel();
-		
+
 		// For thread safety - see ChannelInjector.close()
 		channel.eventLoop().submit(new Callable<Object>() {
 			@Override
@@ -121,7 +120,7 @@ public class BootstrapList implements List<Object> {
 			}
 		});
 	}
-	
+
 	/**
 	 * Close and revert all changes.
 	 */

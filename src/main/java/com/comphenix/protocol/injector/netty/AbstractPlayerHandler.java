@@ -3,8 +3,6 @@ package com.comphenix.protocol.injector.netty;
 import java.io.DataInputStream;
 import java.util.Set;
 
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.concurrency.PacketTypeSet;
 import com.comphenix.protocol.events.ListenerOptions;
@@ -12,6 +10,8 @@ import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.injector.PlayerInjectHooks;
 import com.comphenix.protocol.injector.player.PlayerInjectionHandler;
+
+import org.bukkit.entity.Player;
 
 public abstract class AbstractPlayerHandler implements PlayerInjectionHandler {
 	protected PacketTypeSet sendingFilters;

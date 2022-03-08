@@ -24,9 +24,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.error.ErrorReporter;
 import com.comphenix.protocol.error.Report;
@@ -35,7 +32,10 @@ import com.comphenix.protocol.injector.PacketConstructor.Unwrapper;
 import com.comphenix.protocol.reflect.FieldUtils;
 import com.comphenix.protocol.reflect.instances.DefaultInstances;
 import com.comphenix.protocol.utility.MinecraftReflection;
+
 import com.google.common.primitives.Primitives;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 /**
  * Represents an object capable of converting wrapped Bukkit objects into NMS objects.
@@ -45,7 +45,7 @@ import com.google.common.primitives.Primitives;
  * <li>org.bukkit.entity.Player to net.minecraft.server.EntityPlayer</li>
  * <li>org.bukkit.World to net.minecraft.server.WorldServer</li>
  * </ul>
- * 
+ *
  * @author Kristian
  */
 public class BukkitUnwrapper implements Unwrapper {
@@ -54,43 +54,45 @@ public class BukkitUnwrapper implements Unwrapper {
 	public static final ReportType REPORT_ILLEGAL_ARGUMENT = new ReportType("Illegal argument.");
 	public static final ReportType REPORT_SECURITY_LIMITATION = new ReportType("Security limitation.");
 	public static final ReportType REPORT_CANNOT_FIND_UNWRAP_METHOD = new ReportType("Cannot find method.");
-	
+
 	public static final ReportType REPORT_CANNOT_READ_FIELD_HANDLE = new ReportType("Cannot read field 'handle'.");
-	
+
 	private static Map<Class<?>, Unwrapper> unwrapperCache = new ConcurrentHashMap<Class<?>, Unwrapper>();
-	
+
 	// The current error reporter
 	private final ErrorReporter reporter;
-	
+
 	/**
 	 * Retrieve the default instance of the Bukkit unwrapper.
+	 *
 	 * @return The default instance.
 	 */
 	public static BukkitUnwrapper getInstance() {
 		ErrorReporter currentReporter = ProtocolLibrary.getErrorReporter();
-		
+
 		// Also recreate the unwrapper if the error reporter has changed
 		if (DEFAULT == null || DEFAULT.reporter != currentReporter) {
 			DEFAULT = new BukkitUnwrapper(currentReporter);
 		}
 		return DEFAULT;
 	}
-	
+
 	/**
 	 * Construct a new Bukkit unwrapper with ProtocolLib's default error reporter.
 	 */
 	public BukkitUnwrapper() {
 		this(ProtocolLibrary.getErrorReporter());
 	}
-	
+
 	/**
 	 * Construct a new Bukkit unwrapper with the given error reporter.
+	 *
 	 * @param reporter - the error reporter to use.
 	 */
 	public BukkitUnwrapper(ErrorReporter reporter) {
-		 this.reporter = reporter;
+		this.reporter = reporter;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object unwrapItem(Object wrappedObject) {
@@ -98,48 +100,49 @@ public class BukkitUnwrapper implements Unwrapper {
 		if (wrappedObject == null)
 			return null;
 		Class<?> currentClass = PacketConstructor.getClass(wrappedObject);
-		
+
 		// No need to unwrap primitives
 		if (currentClass.isPrimitive() || currentClass.equals(String.class))
 			return null;
-		
+
 		// Next, check for types that doesn't have a getHandle()
 		if (wrappedObject instanceof Collection) {
 			return handleCollection((Collection<Object>) wrappedObject);
 		} else if (Primitives.isWrapperType(currentClass) || wrappedObject instanceof String) {
 			return null;
 		}
-		
+
 		Unwrapper specificUnwrapper = getSpecificUnwrapper(currentClass);
-		
+
 		// Retrieve the handle
 		if (specificUnwrapper != null)
 			return specificUnwrapper.unwrapItem(wrappedObject);
 		else
 			return null;
 	}
-	
+
 	// Handle a collection of items
 	private Object handleCollection(Collection<Object> wrappedObject) {
-		
+
 		@SuppressWarnings("unchecked")
 		Collection<Object> copy = DefaultInstances.DEFAULT.getDefault(wrappedObject.getClass());
-		
+
 		if (copy != null) {
 			// Unwrap every element
 			for (Object element : wrappedObject) {
 				copy.add(unwrapItem(element));
 			}
 			return copy;
-			
+
 		} else {
 			// Impossible
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Retrieve a cached class unwrapper for the given class.
+	 *
 	 * @param type - the type of the class.
 	 * @return An unwrapper for the given class.
 	 */
@@ -149,10 +152,10 @@ public class BukkitUnwrapper implements Unwrapper {
 			// We will never remove from the cache, so this ought to be thread safe
 			return unwrapperCache.get(type);
 		}
-		
+
 		try {
 			final Method find = type.getMethod("getHandle");
-			
+
 			// It's thread safe, as getMethod should return the same handle
 			Unwrapper methodUnwrapper = new Unwrapper() {
 				@Override
@@ -161,10 +164,10 @@ public class BukkitUnwrapper implements Unwrapper {
 						if (wrappedObject instanceof Class)
 							return checkClass((Class<?>) wrappedObject, type, find.getReturnType());
 						return find.invoke(wrappedObject);
-						
+
 					} catch (IllegalArgumentException e) {
 						reporter.reportDetailed(this,
-								Report.newBuilder(REPORT_ILLEGAL_ARGUMENT).error(e).callerParam(wrappedObject, find)
+							Report.newBuilder(REPORT_ILLEGAL_ARGUMENT).error(e).callerParam(wrappedObject, find)
 						);
 					} catch (IllegalAccessException e) {
 						// Should not occur either
@@ -173,17 +176,17 @@ public class BukkitUnwrapper implements Unwrapper {
 						// This is really bad
 						throw new RuntimeException("Minecraft error.", e);
 					}
-					
+
 					return null;
 				}
 			};
-			
+
 			unwrapperCache.put(type, methodUnwrapper);
 			return methodUnwrapper;
-			
+
 		} catch (SecurityException e) {
 			reporter.reportDetailed(this,
-					Report.newBuilder(REPORT_SECURITY_LIMITATION).error(e).callerParam(type)
+				Report.newBuilder(REPORT_SECURITY_LIMITATION).error(e).callerParam(type)
 			);
 		} catch (NoSuchMethodException e) {
 			// Maybe it's a proxy?
@@ -197,7 +200,7 @@ public class BukkitUnwrapper implements Unwrapper {
 				return fieldUnwrapper;
 			else
 				reporter.reportDetailed(this,
-						Report.newBuilder(REPORT_CANNOT_FIND_UNWRAP_METHOD).error(e).callerParam(type));
+					Report.newBuilder(REPORT_CANNOT_FIND_UNWRAP_METHOD).error(e).callerParam(type));
 		}
 
 		// Default method
@@ -237,12 +240,13 @@ public class BukkitUnwrapper implements Unwrapper {
 
 	/**
 	 * Retrieve a cached unwrapper using the handle field.
+	 *
 	 * @param type - a cached field unwrapper.
 	 * @return The cached field unwrapper.
 	 */
 	private Unwrapper getFieldUnwrapper(final Class<?> type) {
 		final Field find = FieldUtils.getField(type, "handle", true);
-		
+
 		// See if we succeeded
 		if (find != null) {
 			Unwrapper fieldUnwrapper = new Unwrapper() {
@@ -254,20 +258,20 @@ public class BukkitUnwrapper implements Unwrapper {
 						return FieldUtils.readField(find, wrappedObject, true);
 					} catch (IllegalAccessException e) {
 						reporter.reportDetailed(this,
-								Report.newBuilder(REPORT_CANNOT_READ_FIELD_HANDLE).error(e).callerParam(wrappedObject, find)
+							Report.newBuilder(REPORT_CANNOT_READ_FIELD_HANDLE).error(e).callerParam(wrappedObject, find)
 						);
 						return null;
 					}
 				}
 			};
-			
+
 			unwrapperCache.put(type, fieldUnwrapper);
 			return fieldUnwrapper;
-			
+
 		} else {
 			// Inform about this too
 			reporter.reportDetailed(this,
-					Report.newBuilder(REPORT_CANNOT_READ_FIELD_HANDLE).callerParam(find)
+				Report.newBuilder(REPORT_CANNOT_READ_FIELD_HANDLE).callerParam(find)
 			);
 			return null;
 		}

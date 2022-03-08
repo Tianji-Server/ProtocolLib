@@ -7,18 +7,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bukkit.entity.Player;
-
 import com.comphenix.protocol.events.NetworkMarker;
+
+import org.bukkit.entity.Player;
 
 public class BukkitSocketInjector implements SocketInjector {
 	private Player player;
-	
+
 	// Queue of server packets
 	private List<QueuedSendPacket> syncronizedQueue = Collections.synchronizedList(new ArrayList<QueuedSendPacket>());
-	
+
 	/**
 	 * Represents a temporary socket injector.
+	 *
 	 * @param player - a temporary player.
 	 */
 	public BukkitSocketInjector(Player player) {
@@ -44,13 +45,13 @@ public class BukkitSocketInjector implements SocketInjector {
 
 	@Override
 	public void sendServerPacket(Object packet, NetworkMarker marker, boolean filtered)
-			throws InvocationTargetException {
+		throws InvocationTargetException {
 		QueuedSendPacket command = new QueuedSendPacket(packet, marker, filtered);
-		
+
 		// Queue until we can find something better
 		syncronizedQueue.add(command);
 	}
-	
+
 	@Override
 	public Player getPlayer() {
 		return player;
@@ -65,11 +66,11 @@ public class BukkitSocketInjector implements SocketInjector {
 	public void transferState(SocketInjector delegate) {
 		// Transmit all queued packets to a different injector.
 		try {
-			synchronized(syncronizedQueue) {
-			    for (QueuedSendPacket command : syncronizedQueue) {
+			synchronized (syncronizedQueue) {
+				for (QueuedSendPacket command : syncronizedQueue) {
 					delegate.sendServerPacket(command.getPacket(), command.getMarker(), command.isFiltered());
-			    }
-			    syncronizedQueue.clear();
+				}
+				syncronizedQueue.clear();
 			}
 		} catch (InvocationTargetException e) {
 			throw new RuntimeException("Unable to transmit packets to " + delegate + " from old injector.", e);

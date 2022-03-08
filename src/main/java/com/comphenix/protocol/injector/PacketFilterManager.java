@@ -34,7 +34,15 @@ import com.comphenix.protocol.async.AsyncMarker;
 import com.comphenix.protocol.error.ErrorReporter;
 import com.comphenix.protocol.error.Report;
 import com.comphenix.protocol.error.ReportType;
-import com.comphenix.protocol.events.*;
+import com.comphenix.protocol.events.ConnectionSide;
+import com.comphenix.protocol.events.ListenerOptions;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.ListeningWhitelist;
+import com.comphenix.protocol.events.NetworkMarker;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.netty.ProtocolInjector;
 import com.comphenix.protocol.injector.netty.WirePacket;
 import com.comphenix.protocol.injector.packet.PacketInjector;
@@ -45,13 +53,12 @@ import com.comphenix.protocol.reflect.FieldAccessException;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.utility.Util;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
 import io.netty.channel.Channel;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -74,7 +81,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 	public static final ReportType REPORT_CANNOT_INITIALIZE_PACKET_INJECTOR = new ReportType("Unable to initialize packet injector");
 
 	public static final ReportType REPORT_PLUGIN_DEPEND_MISSING =
-			new ReportType("%s doesn't depend on ProtocolLib. Check that its plugin.yml has a 'depend' directive.");
+		new ReportType("%s doesn't depend on ProtocolLib. Check that its plugin.yml has a 'depend' directive.");
 
 	// Registering packet IDs that are not supported
 	public static final ReportType REPORT_UNSUPPORTED_SERVER_PACKET = new ReportType("[%s] Unsupported server packet in current Minecraft version: %s");
@@ -161,6 +168,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Only create instances of this class if ProtocolLib is disabled.
+	 *
 	 * @param builder - PacketFilterBuilder
 	 */
 	public PacketFilterManager(PacketFilterBuilder builder) {
@@ -193,7 +201,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 			throw e;
 		} catch (Throwable e) {
 			reporter.reportWarning(this, Report.newBuilder(REPORT_PLUGIN_VERIFIER_ERROR).
-					messageParam(e.getMessage()).error(e));
+				messageParam(e.getMessage()).error(e));
 		}
 
 		// Prepare version
@@ -217,6 +225,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Construct a new packet filter builder.
+	 *
 	 * @return New builder.
 	 */
 	public static PacketFilterBuilder newBuilder() {
@@ -255,6 +264,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Retrieves how the server packets are read.
+	 *
 	 * @return Injection method for reading server packets.
 	 */
 	@Override
@@ -264,6 +274,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Sets how the server packets are read.
+	 *
 	 * @param playerHook - the new injection method for reading server packets.
 	 */
 	@Override
@@ -278,6 +289,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Warn of common programming mistakes.
+	 *
 	 * @param plugin - plugin to check.
 	 */
 	private void printPluginWarnings(Plugin plugin) {
@@ -352,14 +364,15 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Determine if a given packet may be sent during login.
+	 *
 	 * @param type - the packet type.
 	 * @return TRUE if it may, FALSE otherwise.
 	 */
 	public boolean isLoginPacket(PacketType type) {
 		return PacketType.Login.Client.getInstance().hasMember(type) ||
-				PacketType.Login.Server.getInstance().hasMember(type) ||
-				PacketType.Status.Client.getInstance().hasMember(type) ||
-				PacketType.Status.Server.getInstance().hasMember(type);
+			PacketType.Login.Server.getInstance().hasMember(type) ||
+			PacketType.Status.Client.getInstance().hasMember(type) ||
+			PacketType.Status.Server.getInstance().hasMember(type);
 	}
 
 	private GamePhase processPhase(ListeningWhitelist whitelist) {
@@ -397,6 +410,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Invoked to handle the different game phases of a added listener.
+	 *
 	 * @param phase - listener's game game phase.
 	 */
 	private void incrementPhases(GamePhase phase) {
@@ -418,6 +432,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Invoked to handle the different game phases of a removed listener.
+	 *
 	 * @param phase - listener's game game phase.
 	 */
 	private void decrementPhases(GamePhase phase) {
@@ -441,6 +456,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Determine if the packet IDs in a whitelist is valid.
+	 *
 	 * @param listener - the listener that will be mentioned in the error.
 	 * @param whitelist - whitelist of packet IDs.
 	 * @throws IllegalArgumentException If the whitelist is illegal.
@@ -450,7 +466,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 		for (PacketType type : whitelist.getTypes()) {
 			if (type == null) {
 				throw new IllegalArgumentException(String.format("Packet type in in listener %s was NULL.",
-						PacketAdapter.getPluginName(listener))
+					PacketAdapter.getPluginName(listener))
 				);
 			}
 		}
@@ -521,6 +537,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 	 * Handle a packet sending or receiving event.
 	 * <p>
 	 * Note that we also handle asynchronous events.
+	 *
 	 * @param packetListeners - packet listeners that will receive this event.
 	 * @param event - the evnet to broadcast.
 	 */
@@ -571,7 +588,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 					playerInjection.addPacketHandler(type, listener.getSendingWhitelist().getOptions());
 				else
 					reporter.reportWarning(this,
-							Report.newBuilder(REPORT_UNSUPPORTED_SERVER_PACKET).messageParam(PacketAdapter.getPluginName(listener), type)
+						Report.newBuilder(REPORT_UNSUPPORTED_SERVER_PACKET).messageParam(PacketAdapter.getPluginName(listener), type)
 					);
 			}
 
@@ -581,7 +598,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 					packetInjector.addPacketHandler(type, listener.getReceivingWhitelist().getOptions());
 				else
 					reporter.reportWarning(this,
-							Report.newBuilder(REPORT_UNSUPPORTED_CLIENT_PACKET).messageParam(PacketAdapter.getPluginName(listener), type)
+						Report.newBuilder(REPORT_UNSUPPORTED_CLIENT_PACKET).messageParam(PacketAdapter.getPluginName(listener), type)
 					);
 			}
 		}
@@ -589,6 +606,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Disables packet events from a given packet ID.
+	 *
 	 * @param packets - the packet id(s).
 	 * @param side - which side the event no longer should arrive from.
 	 */
@@ -613,13 +631,13 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 	@Override
 	public void broadcastServerPacket(PacketContainer packet, Entity entity, boolean includeTracker) {
 		Preconditions.checkNotNull(packet, "packet cannot be NULL.");
- 		Preconditions.checkNotNull(entity, "entity cannot be NULL.");
- 		List<Player> trackers = getEntityTrackers(entity);
+		Preconditions.checkNotNull(entity, "entity cannot be NULL.");
+		List<Player> trackers = getEntityTrackers(entity);
 
- 		// Only add it if it's a player
- 		if (includeTracker && entity instanceof Player) {
- 			trackers.add((Player) entity);
- 		}
+		// Only add it if it's a player
+		if (includeTracker && entity instanceof Player) {
+			trackers.add((Player) entity);
+		}
 		broadcastServerPacket(packet, trackers);
 	}
 
@@ -635,7 +653,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 			// Only broadcast the packet to nearby players
 			for (Player player : Util.getOnlinePlayers()) {
 				if (world.equals(player.getWorld()) &&
-				    getDistanceSquared(origin, recycle, player) <= maxDistance) {
+					getDistanceSquared(origin, recycle, player) <= maxDistance) {
 
 					sendServerPacket(player, packet);
 				}
@@ -648,6 +666,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Retrieve the squared distance between a location and a player.
+	 *
 	 * @param origin - the origin location.
 	 * @param recycle - a location object to be recycled, if supported.
 	 * @param player - the player.
@@ -669,6 +688,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Broadcast a packet to a given iterable of players.
+	 *
 	 * @param packet - the packet to broadcast.
 	 * @param players - the iterable of players.
 	 */
@@ -792,9 +812,9 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 		} else {
 			// Let the monitors know though
 			recievedListeners.invokePacketSending(
-					reporter,
-					PacketEvent.fromClient(this, packet, marker, sender, false),
-					ListenerPriority.MONITOR);
+				reporter,
+				PacketEvent.fromClient(this, packet, marker, sender, false),
+				ListenerPriority.MONITOR);
 		}
 
 		playerInjection.recieveClientPacket(sender, mcPacket);
@@ -858,6 +878,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Initialize the packet injection for every player.
+	 *
 	 * @param players - list of players to inject.
 	 */
 	public void initializePlayers(List<Player> players) {
@@ -867,6 +888,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Uninitialize the packet injection of every player.
+	 *
 	 * @param players - list of players to uninject.
 	 */
 	public void uninitializePlayers(List<Player> players) {
@@ -877,7 +899,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Register this protocol manager on Bukkit.
-	 * 
+	 *
 	 * @param manager - Bukkit plugin manager that provides player join/leave events.
 	 * @param plugin - the parent plugin.
 	 */
@@ -890,53 +912,53 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 			@EventHandler(priority = EventPriority.LOWEST)
 			public void onPlayerLogin(PlayerLoginEvent event) {
-					PacketFilterManager.this.onPlayerLogin(event);
-				}
+				PacketFilterManager.this.onPlayerLogin(event);
+			}
 
 			@EventHandler(priority = EventPriority.LOWEST)
 			public void onPrePlayerJoin(PlayerJoinEvent event) {
-					PacketFilterManager.this.onPrePlayerJoin(event);
-				}
+				PacketFilterManager.this.onPrePlayerJoin(event);
+			}
 
 			@EventHandler(priority = EventPriority.MONITOR)
 			public void onPlayerJoin(PlayerJoinEvent event) {
-					PacketFilterManager.this.onPlayerJoin(event);
-				}
+				PacketFilterManager.this.onPlayerJoin(event);
+			}
 
 			@EventHandler(priority = EventPriority.MONITOR)
 			public void onPlayerQuit(PlayerQuitEvent event) {
-					PacketFilterManager.this.onPlayerQuit(event);
-				}
+				PacketFilterManager.this.onPlayerQuit(event);
+			}
 
 			@EventHandler(priority = EventPriority.MONITOR)
 			public void onPluginDisabled(PluginDisableEvent event) {
-					PacketFilterManager.this.onPluginDisabled(event, plugin);
-				}
+				PacketFilterManager.this.onPluginDisabled(event, plugin);
+			}
 
 		}, plugin);
 	}
 
-    private void onPlayerLogin(PlayerLoginEvent event) {
+	private void onPlayerLogin(PlayerLoginEvent event) {
 		playerInjection.updatePlayer(event.getPlayer());
-    }
+	}
 
-    private void onPrePlayerJoin(PlayerJoinEvent event) {
+	private void onPrePlayerJoin(PlayerJoinEvent event) {
 		playerInjection.updatePlayer(event.getPlayer());
-    }
+	}
 
-    private void onPlayerJoin(PlayerJoinEvent event) {
+	private void onPlayerJoin(PlayerJoinEvent event) {
 		try {
 			// Let's clean up the other injection first.
 			playerInjection.uninjectPlayer(event.getPlayer().getAddress());
 			playerInjection.injectPlayer(event.getPlayer(), ConflictStrategy.OVERRIDE);
 		} catch (Exception e) {
 			reporter.reportDetailed(PacketFilterManager.this,
-					Report.newBuilder(REPORT_CANNOT_INJECT_PLAYER).callerParam(event).error(e)
+				Report.newBuilder(REPORT_CANNOT_INJECT_PLAYER).callerParam(event).error(e)
 			);
 		}
-    }
+	}
 
-    private void onPlayerQuit(PlayerQuitEvent event) {
+	private void onPlayerQuit(PlayerQuitEvent event) {
 		try {
 			Player player = event.getPlayer();
 
@@ -945,12 +967,12 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 			playerInjection.uninjectPlayer(player);
 		} catch (Exception e) {
 			reporter.reportDetailed(PacketFilterManager.this,
-					Report.newBuilder(REPORT_CANNOT_UNINJECT_OFFLINE_PLAYER).callerParam(event).error(e)
+				Report.newBuilder(REPORT_CANNOT_UNINJECT_OFFLINE_PLAYER).callerParam(event).error(e)
 			);
 		}
-    }
+	}
 
-    private void onPluginDisabled(PluginDisableEvent event, Plugin protocolLibrary) {
+	private void onPluginDisabled(PluginDisableEvent event, Plugin protocolLibrary) {
 		try {
 			// Clean up in case the plugin forgets
 			if (event.getPlugin() != protocolLibrary) {
@@ -958,13 +980,14 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 			}
 		} catch (Exception e) {
 			reporter.reportDetailed(PacketFilterManager.this,
-					Report.newBuilder(REPORT_CANNOT_UNREGISTER_PLUGIN).callerParam(event).error(e)
+				Report.newBuilder(REPORT_CANNOT_UNREGISTER_PLUGIN).callerParam(event).error(e)
 			);
 		}
-    }
+	}
 
 	/**
 	 * Retrieve the number of listeners that expect packets during playing.
+	 *
 	 * @return Number of listeners.
 	 */
 	private int getPhasePlayingCount() {
@@ -973,6 +996,7 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 
 	/**
 	 * Retrieve the number of listeners that expect packets during login.
+	 *
 	 * @return Number of listeners
 	 */
 	private int getPhaseLoginCount() {
@@ -992,12 +1016,13 @@ public final class PacketFilterManager implements ListenerInvoker, InternalManag
 			return type;
 		} else {
 			throw new IllegalArgumentException(
-					"Unable to find associated packet of " + packet + ": Lookup returned NULL.");
+				"Unable to find associated packet of " + packet + ": Lookup returned NULL.");
 		}
 	}
 
 	/**
 	 * Retrieves the current plugin class loader.
+	 *
 	 * @return Class loader.
 	 */
 	public ClassLoader getClassLoader() {

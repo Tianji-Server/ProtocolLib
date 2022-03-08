@@ -16,13 +16,14 @@ public class PacketFilterBuilder {
 	private MinecraftVersion mcVersion;
 	private DelayedSingleTask unhookTask;
 	private ErrorReporter reporter;
-	
+
 	// Whether or not we need to enable Netty
 	private AsyncFilterManager asyncManager;
 	private boolean nettyEnabled;
 
 	/**
 	 * Update the current class loader.
+	 *
 	 * @param classLoader - current class loader.
 	 * @return This builder, for chaining.
 	 */
@@ -32,9 +33,10 @@ public class PacketFilterBuilder {
 		this.classLoader = classLoader;
 		return this;
 	}
-	
+
 	/**
 	 * Set the current server.
+	 *
 	 * @param server - current server.
 	 * @return This builder, for chaining.
 	 */
@@ -44,9 +46,10 @@ public class PacketFilterBuilder {
 		this.server = server;
 		return this;
 	}
-	
+
 	/**
 	 * Set a reference to the plugin instance of ProtocolLib.
+	 *
 	 * @param library - plugin instance.
 	 * @return This builder, for chaining.
 	 */
@@ -56,11 +59,12 @@ public class PacketFilterBuilder {
 		this.library = library;
 		return this;
 	}
-	
+
 	/**
 	 * Set the current Minecraft version.
+	 *
 	 * @param mcVersion - Minecraft version.
-	 * @return This builder, for chaining. 
+	 * @return This builder, for chaining.
 	 */
 	public PacketFilterBuilder minecraftVersion(@Nonnull MinecraftVersion mcVersion) {
 		if (mcVersion == null)
@@ -68,9 +72,10 @@ public class PacketFilterBuilder {
 		this.mcVersion = mcVersion;
 		return this;
 	}
-	
+
 	/**
 	 * Set the task used to delay unhooking when ProtocolLib is no in use.
+	 *
 	 * @param unhookTask - the unhook task.
 	 * @return This builder, for chaining.
 	 */
@@ -80,9 +85,10 @@ public class PacketFilterBuilder {
 		this.unhookTask = unhookTask;
 		return this;
 	}
-	
+
 	/**
 	 * Set the error reporter.
+	 *
 	 * @param reporter - new error reporter.
 	 * @return This builder, for chaining.
 	 */
@@ -92,19 +98,21 @@ public class PacketFilterBuilder {
 		this.reporter = reporter;
 		return this;
 	}
-	
+
 	/**
 	 * Determine if we should prepare to hook Netty in Spigot.
 	 * <p>
 	 * This is calculated in the {@link #build()} method.
+	 *
 	 * @return TRUE if we should, FALSE otherwise.
 	 */
 	public boolean isNettyEnabled() {
 		return nettyEnabled;
 	}
-	
+
 	/**
 	 * Retrieve the class loader set in this builder.
+	 *
 	 * @return The class loader.
 	 */
 	public ClassLoader getClassLoader() {
@@ -113,6 +121,7 @@ public class PacketFilterBuilder {
 
 	/**
 	 * Retrieve the current CraftBukkit server.
+	 *
 	 * @return Current server.
 	 */
 	public Server getServer() {
@@ -121,6 +130,7 @@ public class PacketFilterBuilder {
 
 	/**
 	 * Retrieve a reference to the current ProtocolLib instance.
+	 *
 	 * @return ProtocolLib.
 	 */
 	public Plugin getLibrary() {
@@ -129,6 +139,7 @@ public class PacketFilterBuilder {
 
 	/**
 	 * Retrieve the current Minecraft version.
+	 *
 	 * @return Current version.
 	 */
 	public MinecraftVersion getMinecraftVersion() {
@@ -137,6 +148,7 @@ public class PacketFilterBuilder {
 
 	/**
 	 * Retrieve the task that is used to delay unhooking when ProtocolLib is no in use.
+	 *
 	 * @return The unhook task.
 	 */
 	public DelayedSingleTask getUnhookTask() {
@@ -145,6 +157,7 @@ public class PacketFilterBuilder {
 
 	/**
 	 * Retrieve the error reporter.
+	 *
 	 * @return Error reporter.
 	 */
 	public ErrorReporter getReporter() {
@@ -155,14 +168,16 @@ public class PacketFilterBuilder {
 	 * Retrieve the asynchronous manager.
 	 * <p>
 	 * This is first constructed the {@link #build()} method.
+	 *
 	 * @return The asynchronous manager.
 	 */
 	public AsyncFilterManager getAsyncManager() {
 		return asyncManager;
 	}
-	
+
 	/**
 	 * Create a new packet filter manager.
+	 *
 	 * @return A new packet filter manager.
 	 */
 	public InternalManager build() {
@@ -170,7 +185,7 @@ public class PacketFilterBuilder {
 			throw new IllegalArgumentException("reporter cannot be NULL.");
 		if (classLoader == null)
 			throw new IllegalArgumentException("classLoader cannot be NULL.");
-		
+
 		asyncManager = new AsyncFilterManager(reporter, server.getScheduler());
 		nettyEnabled = false;
 
@@ -179,11 +194,12 @@ public class PacketFilterBuilder {
 
 	/**
 	 * Construct a new packet filter manager without checking for Netty.
+	 *
 	 * @return A new packet filter manager.
 	 */
 	private PacketFilterManager buildInternal() {
 		PacketFilterManager manager = new PacketFilterManager(this);
-		
+
 		// It's a cyclic reference, but it's too late to fix now
 		asyncManager.setManager(manager);
 		return manager;
