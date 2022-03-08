@@ -1,18 +1,18 @@
 /**
- *  ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
- *  Copyright (C) 2012 Kristian S. Stangeland
- *
- *  This program is free software; you can redistribute it and/or modify it under the terms of the
- *  GNU General Public License as published by the Free Software Foundation; either version 2 of
- *  the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with this program;
- *  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307 USA
+ * ProtocolLib - Bukkit server library that allows access to the Minecraft protocol.
+ * Copyright (C) 2012 Kristian S. Stangeland
+ * <p>
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License along with this program;
+ * if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA
  */
 package com.comphenix.protocol;
 
@@ -36,14 +36,14 @@ import com.comphenix.protocol.metrics.Statistics;
 import com.comphenix.protocol.reflect.compiler.BackgroundCompiler;
 import com.comphenix.protocol.updater.Updater;
 import com.comphenix.protocol.updater.Updater.UpdateType;
-import com.comphenix.protocol.utility.ChatExtensions;
 import com.comphenix.protocol.utility.ByteBuddyFactory;
-import com.comphenix.protocol.utility.NettyVersion;
+import com.comphenix.protocol.utility.ChatExtensions;
 import com.comphenix.protocol.utility.MinecraftVersion;
+import com.comphenix.protocol.utility.NettyVersion;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-
 import org.bukkit.Server;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
@@ -144,6 +144,12 @@ public class ProtocolLib extends JavaPlugin {
 		logger = getLogger();
 		ProtocolLogger.init(this);
 
+		logger.info("***********************************");
+		logger.info("Thank you for using ProtocolLib v5.0.0-SNAPSHOT! This version contains many experimental"
+			+ " changes. We hope this results in substantial performance gains and reduced memory footprint,"
+			+ " but if you encounter any issues, please report them on the ProtocolLib GitHub!");
+		logger.info("***********************************");
+
 		// Initialize enhancer factory
 		ByteBuddyFactory.getInstance().setClassLoader(getClassLoader());
 
@@ -171,11 +177,11 @@ public class ProtocolLib extends JavaPlugin {
 		// Print the state of the debug mode
 		if (config.isDebug()) {
 			logger.warning("Debug mode is enabled!");
-						logger.info("Detected netty version: " + NettyVersion.getVersion());
+			logger.info("Detected netty version: " + NettyVersion.getVersion());
 		} else {
 			NettyVersion.getVersion(); // this will cache the version
 		}
-		
+
 		// And the state of the error reporter
 		if (config.isDetailedErrorReporting()) {
 			detailedReporter.setDetailedReporting(true);
@@ -241,18 +247,18 @@ public class ProtocolLib extends JavaPlugin {
 		for (ProtocolCommand command : ProtocolCommand.values()) {
 			try {
 				switch (command) {
-				case PROTOCOL:
-					commandProtocol = new CommandProtocol(reporter, this, updater, config);
-					break;
-				case FILTER:
-					commandFilter = new CommandFilter(reporter, this, config);
-					break;
-				case PACKET:
-					commandPacket = new CommandPacket(reporter, this, logger, commandFilter, protocolManager);
-					break;
-				case LOGGING:
-					packetLogging = new PacketLogging(this, protocolManager);
-					break;
+					case PROTOCOL:
+						commandProtocol = new CommandProtocol(reporter, this, updater, config);
+						break;
+					case FILTER:
+						commandFilter = new CommandFilter(reporter, this, config);
+						break;
+					case PACKET:
+						commandPacket = new CommandPacket(reporter, this, logger, commandFilter, protocolManager);
+						break;
+					case LOGGING:
+						packetLogging = new PacketLogging(this, protocolManager);
+						break;
 				}
 			} catch (OutOfMemoryError e) {
 				throw e;
@@ -267,6 +273,7 @@ public class ProtocolLib extends JavaPlugin {
 
 	/**
 	 * Retrieve a error reporter that may be filtered by the configuration.
+	 *
 	 * @return The new default error reporter.
 	 */
 	private ErrorReporter getFilteredReporter(ErrorReporter reporter) {
@@ -577,7 +584,7 @@ public class ProtocolLib extends JavaPlugin {
 	private void checkUpdates() {
 		// Ignore milliseconds - it's pointless
 		long currentTime = System.currentTimeMillis() / MILLI_PER_SECOND;
-		
+
 		try {
 			long updateTime = config.getAutoLastTime() + config.getAutoDelay();
 
@@ -639,6 +646,7 @@ public class ProtocolLib extends JavaPlugin {
 	 * <p>
 	 * Note that this method may return NULL when the server is reloading or shutting down. It is also
 	 * NULL if metrics has been disabled.
+	 *
 	 * @return Metrics instance container.
 	 */
 	public Statistics getStatistics() {
